@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Task extends Model
 {
@@ -19,30 +20,44 @@ class Task extends Model
         'start',
         'end',
         'file_path',
+        'priority',
+        'participants',
+    ];
+
+    protected $casts = [
+        'deadline' => 'datetime',
+        'start' => 'datetime',
+        'end' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'participants' => 'array',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
-        return $this->belongsTo(User::class, 'assigned_to');
     }
 
-    // 🔹 Tự động set trạng thái khi lưu hoặc update
+    public function files()
+    {
+        return $this->hasMany(TaskFile::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
     protected static function booted()
     {
         static::saving(function ($task) {
             $today = now()->toDateString();
 
-            // Nếu tiến độ đạt 100% => Completed
             if ($task->progress == 100) {
                 $task->status = 'completed';
-            } 
-            // Nếu chưa completed mà deadline < hôm nay => Overdue
-            elseif ($task->deadline && $task->deadline < $today) {
+            } elseif ($task->deadline && $task->deadline->toDateString() < $today && $task->status !== 'completed') {
                 $task->status = 'overdue';
-            } 
-            // Nếu chưa có status thì gán mặc định
-            elseif (!$task->status) {
+            } elseif (!$task->status) {
                 $task->status = 'pending';
             }
         });

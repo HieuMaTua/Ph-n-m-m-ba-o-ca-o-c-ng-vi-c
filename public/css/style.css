@@ -1,0 +1,198 @@
+body {
+    background-color: #f6f8fb;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+a {
+    text-decoration: none;
+}
+.sidebar {
+    height: 100vh;
+    background: linear-gradient(180deg, #1976f3, #0d47a1);
+    color: white;
+    padding: 20px 15px;
+    position: fixed;
+    width: 240px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-radius: 0 20px 20px 0;
+}
+.sidebar h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+.sidebar a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    color: #ecf0f1;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    transition: all 0.3s;
+    font-weight: 500;
+}
+.sidebar a:hover,
+.sidebar a.active {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+/* Styling cho dropdown trong sidebar */
+.sidebar .dropdown {
+    position: static; /* Để menu drop xuống trong flow của sidebar */
+}
+.sidebar .dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    color: #ecf0f1;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    transition: all 0.3s;
+    font-weight: 500;
+    text-decoration: none;
+    width: 100%; /* Đảm bảo full width như các link khác */
+    border: none;
+    background: none;
+}
+.sidebar .dropdown-toggle:hover,
+.sidebar .dropdown-toggle.active {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+.sidebar .dropdown-toggle::after {
+    /* Icon mũi tên mặc định của Bootstrap, tùy chỉnh màu và vị trí */
+    margin-left: auto;
+    color: #ecf0f1;
+    transition: transform 0.3s; /* Rotate khi mở */
+}
+.sidebar .dropdown-toggle[aria-expanded="true"]::after {
+    transform: rotate(180deg); /* Xoay mũi tên khi dropdown mở */
+}
+.sidebar .dropdown-menu {
+    position: absolute; /* Để overlay đúng vị trí */
+    top: 100%; /* Drop ngay dưới toggle */
+    left: 0;
+    width: 100%; /* Full width của sidebar */
+    margin: 0;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.15); /* Nền trong suốt phù hợp gradient */
+    border: none;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 1000; /* Đảm bảo hiển thị trên các phần khác */
+    backdrop-filter: blur(10px); /* Hiệu ứng mờ cho modern look */
+}
+.sidebar .dropdown-menu.show {
+    display: block; /* Bootstrap sẽ toggle class 'show' */
+}
+.sidebar .dropdown-item {
+    display: block;
+    padding: 10px 14px 10px 24px; /* Indent để giống sub-menu */
+    color: #ecf0f1;
+    font-weight: 500;
+    transition: all 0.3s;
+    border: none;
+    background: none;
+    text-align: left;
+}
+.sidebar .dropdown-item:hover,
+.sidebar .dropdown-item.active,
+.sidebar .dropdown-item:focus {
+    background: rgba(255, 255, 255, 0.3);
+    color: #fff;
+}
+.sidebar .dropdown-item:active {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Các phần còn lại giữ nguyên */
+.profile {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    transition: background 0.3s;
+}
+.profile img {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+}
+.profile h6 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+}
+.btn-logout {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    margin-left: 8px;
+    transition: color 0.3s;
+}
+.btn-logout:hover {
+    color: #e74c3c;
+}
+.content {
+    margin-left: 240px;
+    padding: 25px;
+    min-height: 100vh;
+}
+h1 {
+    font-size: 26px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 25px;
+}
+.stat-card {
+    background: #fff;
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    transition: transform 0.2s;
+}
+.stat-card:hover {
+    transform: translateY(-4px);
+}
+.stat-card h5 {
+    font-size: 16px;
+    color: #7f8c8d;
+}
+.stat-card h2 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+.error-message {
+    display: none;
+    color: #e74c3c;
+    font-size: 14px;
+    margin-top: 5px;
+}
+.search-filter {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+.search-filter input,
+.search-filter select {
+    border-radius: 8px;
+}
+.task-table-section {
+    margin-bottom: 30px;
+}
+.task-table-section h6 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}

@@ -9,7 +9,7 @@ class Kernel extends ConsoleKernel
 {
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('tasks:update-statuses')->daily();
+        $schedule->job(new \App\Jobs\SendDeadlineReminders)->dailyAt('08:00');
     }
 
     protected function commands()
@@ -17,6 +17,7 @@ class Kernel extends ConsoleKernel
         $this->load(__DIR__.'/Commands');
         require base_path('routes/console.php');
     }
+    
     
 }
 ?>

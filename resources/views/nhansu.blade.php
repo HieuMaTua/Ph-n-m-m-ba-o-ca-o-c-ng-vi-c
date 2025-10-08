@@ -8,78 +8,8 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="icon" href="{{ asset('favicon_io/favicon-32x32.png') }}" type="image/png">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="{{ asset('css/style.css') }}">
   <style>
-    body {
-      background-color: #f6f8fb;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    a { text-decoration: none; }
-
-    /* Sidebar */
-    .sidebar {
-      height: 100vh;
-      background: linear-gradient(180deg, #1976f3, #0d47a1);
-      color: white;
-      padding: 20px 15px;
-      position: fixed;
-      width: 240px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      border-radius: 0 20px 20px 0;
-    }
-    .sidebar h2 {
-      font-size: 20px;
-      font-weight: 600;
-      margin-bottom: 20px;
-    }
-    .sidebar a {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 14px;
-      color: #ecf0f1;
-      border-radius: 12px;
-      margin-bottom: 8px;
-      transition: all 0.3s;
-      font-weight: 500;
-    }
-    .sidebar a:hover, .sidebar a.active {
-      background: rgba(255, 255, 255, 0.2);
-      color: #fff;
-    }
-
-    /* Profile */
-    .profile {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      padding: 8px;
-      display: flex;
-      align-items: center;
-      transition: background 0.3s;
-    }
-    .profile img {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #fff;
-    }
-    .profile h6 {
-      font-size: 14px;
-      font-weight: 600;
-      margin: 0;
-    }
-    .btn-logout {
-      background: transparent;
-      border: none;
-      color: #fff;
-      font-size: 18px;
-      margin-left: 8px;
-      transition: color 0.3s;
-    }
-    .btn-logout:hover { color: #e74c3c; }
-
     /* Content */
     .content {
       margin-left: 240px;
@@ -127,42 +57,7 @@
 </head>
 <body>
   <!-- Sidebar -->
-  <div class="sidebar">
-    <div>
-      <h2><i class="bi bi-kanban"></i> Quản lý</h2>
-      <a href="{{ route('home') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
-      <a href="{{ route('reports.index') }}"><i class="bi bi-clipboard-data"></i> Báo cáo</a>
-      <a href="{{ route('tasks.calendar') }}"><i class="bi bi-list-task"></i> Công việc</a>
-      <a href="{{ route('nhansu.index') }}" class="active"><i class="bi bi-people"></i> Nhân sự</a>
-      <a href="#"><i class="bi bi-gear"></i> Cài đặt</a>
-    </div>
-
-    <!-- Profile -->
-    <div class="profile">
-      <img src="https://i.pravatar.cc/100" alt="Avatar" class="me-2">
-      <div class="flex-grow-1">
-        <h6>{{ Auth::user()->name ?? 'Người dùng' }}</h6>
-        <small>
-            @if(Auth::user() && Auth::user()->role)
-              @if(Auth::user()->role == 'director')
-                Giám đốc
-              @elseif(Auth::user()->role == 'manager')
-                Quản lý
-              @else
-                Nhân viên
-              @endif
-            @else
-              Không xác định
-            @endif
-          </small>
-      </div>
-      <form action="{{ route('logout') }}" method="POST">
-        @csrf
-        <button type="submit" class="btn-logout"><i class="bi bi-box-arrow-right"></i></button>
-      </form>
-    </div>
-  </div>
-
+  @include('layout.sidebar');
   <!-- Content -->
   <div class="content">
     <!-- Thông báo -->
@@ -179,9 +74,9 @@
       </div>
     @endif
 
-    <h1>Quản lý nhân sự</h1>
+    {{-- <h1>Quản lý nhân sự</h1> --}}
 
-    <div class="card mb-3" style="border-radius: 12px; background: linear-gradient(90deg, #007bff, #00c6ff); color: white;">
+    <div class="card mb-3" style="border-radius: 12px; background: linear-gradient(90deg, #3498db, #1abc9c); color: white;">
       <div class="card-body d-flex justify-content-between align-items-center">
         <div>
           <h4>Xin chào, {{ Auth::user()->name }}</h4>

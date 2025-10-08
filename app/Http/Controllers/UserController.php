@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -34,5 +35,12 @@ class UserController extends Controller
         $user->save();
 
         return redirect()->route('users.index')->with('success', 'Cập nhật thành công!');
+    }
+
+    public function updateFcmToken(Request $request)
+    {
+        $request->validate(['fcm_token' => 'required|string']);
+        Auth::user()->update(['fcm_token' => $request->fcm_token]);
+        return response()->json(['success' => true]);
     }
 }

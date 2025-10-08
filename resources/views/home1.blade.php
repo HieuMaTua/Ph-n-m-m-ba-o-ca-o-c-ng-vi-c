@@ -3,87 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Báo cáo công việc - Dashboard</title>
+  <title>Quản lý nhân sự - Dashboard</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="icon" href="{{ asset('favicon_io/favicon-32x32.png') }}" type="image/png">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="{{ asset('css/style.css') }}">
   <style>
-    body {
-      background-color: #f6f8fb;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    a { text-decoration: none; }
-
-    /* Sidebar */
-    .sidebar {
-      height: 100vh;
-      background: linear-gradient(180deg, #1976f3, #0d47a1);
-      color: white;
-      padding: 20px 15px;
-      position: fixed;
-      width: 240px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      border-radius: 0 20px 20px 0;
-    }
-    .sidebar h2 {
-      font-size: 20px;
-      font-weight: 600;
-      margin-bottom: 20px;
-    }
-    .sidebar a {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 14px;
-      color: #ecf0f1;
-      border-radius: 12px;
-      margin-bottom: 8px;
-      transition: all 0.3s;
-      font-weight: 500;
-    }
-    .sidebar a:hover, .sidebar a.active {
-      background: rgba(255, 255, 255, 0.2);
-      color: #fff;
-    }
-
-    /* Profile */
-    .profile {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      padding: 8px;
-      display: flex;
-      align-items: center;
-      transition: background 0.3s;
-    }
-    .profile img {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #fff;
-    }
-    .profile h6 {
-      font-size: 14px;
-      font-weight: 600;
-      margin: 0;
-    }
-    .btn-logout {
-      background: transparent;
-      border: none;
-      color: #fff;
-      font-size: 18px;
-      margin-left: 8px;
-      transition: color 0.3s;
-    }
-    .btn-logout:hover { color: #e74c3c; }
-
     /* Content */
     .content {
       margin-left: 240px;
       padding: 25px;
       min-height: 100vh;
+      background: #f8f9fa;
     }
     h1 {
       font-size: 26px;
@@ -93,19 +25,115 @@
     }
 
     /* Cards */
-    .stat-card {
-      background: #fff;
+    .card {
       border: none;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      padding: 20px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       transition: transform 0.2s;
+      background: #ffffff;
     }
-    .stat-card:hover { transform: translateY(-4px); }
-    .stat-card h5 { font-size: 16px; color: #7f8c8d; }
-    .stat-card h2 { font-size: 28px; font-weight: bold; margin-top: 10px; }
+    .card:hover {
+      transform: translateY(-4px);
+    }
+    .card-header {
+      background: linear-gradient(90deg, #3498db, #1abc9c);
+      color: white;
+      font-weight: 600;
+      padding: 15px;
+      border-radius: 12px 12px 0 0;
+    }
+    .card-body {
+      padding: 20px;
+    }
+    .welcome-card {
+      background: linear-gradient(90deg, #3498db, #1abc9c);
+      color: white;
+    }
+    .stat-card {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .stat-card:hover {
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+      transform: translateY(-4px);
+    }
+    .stat-card h5 {
+      font-size: 16px;
+      color: #7f8c8d;
+      margin-bottom: 10px;
+    }
+    .stat-card h2 {
+      font-size: 28px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin: 0;
+    }
 
-    /* Error message */
+    /* Search and Filter */
+    .search-filter {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .search-filter input, .search-filter select {
+      border-radius: 8px;
+    }
+
+    /* Form and Buttons */
+    .form-control, .btn {
+      border-radius: 8px;
+    }
+    .btn-primary {
+      background: linear-gradient(90deg, #3498db, #1abc9c);
+      border: none;
+    }
+    .btn-primary:hover {
+      background: linear-gradient(90deg, #2980b9, #16a085);
+    }
+    .btn-warning, .btn-danger {
+      border-radius: 8px;
+    }
+
+    /* Table */
+    .table {
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    .table thead {
+      background: #2c3e50;
+      color: white;
+    }
+    .table tbody tr {
+      transition: background-color 0.2s;
+    }
+    .table tbody tr:hover {
+      background-color: #f1f3f5;
+    }
+    .badge {
+      font-size: 0.9rem;
+      padding: 6px 10px;
+    }
+
+    /* Chart */
+    .chart-container {
+      position: relative;
+      width: 100%;
+      padding: 20px;
+    }
+    .chart-container canvas {
+      width: 100% !important;
+      height: auto !important;
+      max-height: 300px;
+    }
+
+    /* Error Message */
     .error-message {
       display: none;
       color: #e74c3c;
@@ -113,46 +141,38 @@
       margin-top: 5px;
     }
 
-    /* Search and Filter */
-    .search-filter {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-    .search-filter input, .search-filter select {
-      border-radius: 8px;
+    /* Responsive */
+    @media (max-width: 576px) {
+      .content {
+        margin-left: 0;
+        padding: 15px;
+      }
+      .search-filter {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-filter input, .search-filter select, .btn {
+        width: 100%;
+      }
+      .stat-card h2 {
+        font-size: 24px;
+      }
+      .table {
+        font-size: 0.85rem;
+      }
+      .chart-container canvas {
+        max-height: 250px;
+      }
     }
   </style>
 </head>
 <body>
   <!-- Sidebar -->
-  <div class="sidebar">
-    <div>
-      <h2><i class="bi bi-kanban"></i> Quản lý</h2>
-      <a href="{{ route('home') }}" class="active"><i class="bi bi-speedometer2"></i> Dashboard</a>
-      <a href="{{ route('reports.index') }}"><i class="bi bi-clipboard-data"></i> Báo cáo</a>
-      <a href="#"><i class="bi bi-list-task"></i> Công việc</a>
-      <a href="#"><i class="bi bi-people"></i> Nhân sự</a>
-      <a href="#"><i class="bi bi-gear"></i> Cài đặt</a>
-    </div>
-
-    <!-- Profile -->
-    <div class="profile">
-      <img src="https://i.pravatar.cc/100" alt="Avatar" class="me-2">
-      <div class="flex-grow-1">
-        <h6>{{ Auth::user()->name ?? 'Người dùng' }}</h6>
-        <small>Online</small>
-      </div>
-      <form action="{{ route('logout') }}" method="POST">
-        @csrf
-        <button type="submit" class="btn-logout"><i class="bi bi-box-arrow-right"></i></button>
-      </form>
-    </div>
-  </div>
+  @include('layout.sidebar')
 
   <!-- Content -->
   <div class="content">
-    <!-- Hiển thị thông báo -->
+    <!-- Thông báo -->
     @if(session('success'))
       <div class="alert alert-success alert-dismissible fade show" role="alert">
         {{ session('success') }}
@@ -166,232 +186,264 @@
       </div>
     @endif
 
-    <h1>Dashboard báo cáo công việc</h1>
+    <h1>Quản lý nhân sự</h1>
 
-    <div class="card mb-3" style="border-radius: 12px; background: linear-gradient(90deg, #007bff, #00c6ff); color: white;">
+    <div class="card mb-3 welcome-card">
       <div class="card-body d-flex justify-content-between align-items-center">
-          <div>
-              <h4>Xin chào, {{ Auth::user()->name }}</h4>
-              <p id="currentDate"></p>
-              <p id="currentTime" style="font-weight: bold;"></p>
-          </div>
-          <div class="text-end">
-              <i class="bi bi-list-task" style="font-size: 2rem;"></i>
-              <p class="mb-0">Hôm nay có <strong>{{ $tasksToday }}</strong> công việc</p>
-              <small>Tiến độ trung bình: {{ $avgProgress ?? 0 }}%</small>
-          </div>
-      </div>
-  </div>
-  
-    <div class="row g-3">
-      <div class="col-md-3">
-        <div class="stat-card">
-          <h5>Công việc hôm nay</h5>
-          <h2>{{ $tasksToday ?? 0 }}</h2>
+        <div>
+          <h4>Xin chào, {{ Auth::user()->name }}</h4>
+          <p id="currentDate"></p>
+          <p id="currentTime" style="font-weight: bold;"></p>
         </div>
-      </div>
-      <div class="col-md-3">
-        <div class="stat-card">
-          <h5>Đã hoàn thành</h5>
-          <h2>{{ $completed ?? 0 }}</h2>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="stat-card">
-          <h5>Đang thực hiện</h5>
-          <h2>{{ $inProgress ?? 0 }}</h2>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="stat-card">
-          <h5>Quá hạn</h5>
-          <h2>{{ $overdue ?? 0 }}</h2>
+        <div class="text-end">
+          <i class="bi bi-people" style="font-size: 2rem;"></i>
+          <p class="mb-0">Tổng số nhân viên: <strong>{{ $totalEmployees }}</strong></p>
         </div>
       </div>
     </div>
 
-    <!-- Chart -->
-    <div class="card mt-4 p-4">
-      <h5>Thống kê tiến độ</h5>
-      @if(($completed ?? 0) + ($inProgress ?? 0) + ($overdue ?? 0) == 0)
-        <p class="text-muted">Chưa có dữ liệu để hiển thị biểu đồ.</p>
-      @else
-        <canvas id="taskChart" height="100"></canvas>
-      @endif
+    <!-- Thống kê -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="stat-card">
+          <h5>Tổng nhân viên</h5>
+          <h2>{{ $totalEmployees ?? 0 }}</h2>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card">
+          <h5>Giám đốc</h5>
+          <h2>{{ $directorsCount ?? 0 }}</h2>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card">
+          <h5>Quản lý</h5>
+          <h2>{{ $managersCount ?? 0 }}</h2>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card">
+          <h5>Nhân viên thường</h5>
+          <h2>{{ $staffCount ?? 0 }}</h2>
+        </div>
+      </div>
     </div>
 
-    <!-- Danh sách công việc -->
-    <div class="card mt-4 p-4">
-      <h5>Danh sách công việc</h5>
-      <!-- Tìm kiếm và lọc -->
-      <div class="search-filter">
-        <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm công việc...">
-        <select id="statusFilter" class="form-control" style="width: 200px;">
-          <option value="">Tất cả trạng thái</option>
-          <option value="pending">Chờ xử lý</option>
-          <option value="in_progress">Đang làm</option>
-          <option value="completed">Hoàn thành</option>
-          <option value="overdue">Quá hạn</option>
-        </select>
-      </div>
-
-      <form id="taskForm" action="{{ route('tasks.store') }}" method="POST" class="row g-3 mb-4">
-        @csrf
-        <div class="col-md-4">
-          <input type="text" name="title" class="form-control" placeholder="Tên công việc" required>
-          <div class="error-message" id="title-error">Vui lòng nhập tên công việc.</div>
+    <!-- Biểu đồ -->
+    <div class="card mt-4">
+      <div class="card-header">Thống kê nhân viên theo vai trò</div>
+      <div class="card-body">
+        <div class="chart-container">
+          @if(($directorsCount ?? 0) + ($managersCount ?? 0) + ($staffCount ?? 0) == 0)
+            <p class="text-muted">Chưa có dữ liệu để hiển thị biểu đồ.</p>
+          @else
+            <canvas id="employeeChart" height="100"></canvas>
+          @endif
         </div>
-        <div class="col-md-3">
-          <select name="status" class="form-control">
-            <option value="pending">Chờ xử lý</option>
-            <option value="in_progress">Đang làm</option>
-            <option value="completed">Hoàn thành</option>
-            <option value="overdue">Quá hạn</option>
+      </div>
+    </div>
+
+    <!-- Danh sách nhân viên -->
+    <div class="card mt-4">
+      <div class="card-header">Danh sách nhân viên</div>
+      <div class="card-body">
+        <!-- Tìm kiếm và lọc -->
+        <div class="search-filter">
+          <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm nhân viên...">
+          <select id="roleFilter" class="form-control" style="width: 200px;">
+            <option value="">Tất cả vai trò</option>
+            <option value="director">Giám đốc</option>
+            <option value="manager">Quản lý</option>
+            <option value="staff">Nhân viên thường</option>
           </select>
         </div>
-        <div class="col-md-3">
-          <input type="date" name="deadline" class="form-control">
-        </div>
-        <div class="col-md-2">
-          <input type="number" name="progress" min="0" max="100" class="form-control" placeholder="% tiến độ">
-          <div class="error-message" id="progress-error">Tiến độ phải từ 0 đến 100.</div>
-        </div>
-        <div class="col-md-2">
-          <button type="submit" class="btn btn-primary w-100">Thêm</button>
-        </div>
-      </form>
 
-      <table class="table table-bordered table-hover" id="taskTable">
-        <thead class="table-dark">
-          <tr>
-            <th>ID</th>
-            <th>Tên công việc</th>
-            <th>Trạng thái</th>
-            <th>Hạn chót</th>
-            <th>Ngày tạo</th>
-            <th>Hành động</th>
-            <th>Tiến độ</th>
-          </tr>
-        </thead>
-        <tbody>
-          @forelse($tasks as $task)
-            <tr data-status="{{ $task->status }}">
-              <td>{{ $task->id }}</td>
-              <td>{{ $task->title }}</td>
-              <td>
-                @if($task->status == 'completed')
-                  <span class="badge bg-success">Hoàn thành</span>
-                @elseif($task->status == 'in_progress')
-                  <span class="badge bg-warning text-dark">Đang làm</span>
-                @elseif($task->status == 'overdue')
-                  <span class="badge bg-danger">Quá hạn</span>
-                @else
-                  <span class="badge bg-secondary">Chờ xử lý</span>
-                @endif
-              </td>
-              <td>{{ $task->deadline }}</td>
-              <td>{{ $task->created_at->format('d/m/Y') }}</td>
-              <td>
-                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ $task->id }}">Sửa</button>
-                <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="d-inline">
-                  @csrf
-                  @method('DELETE')
-                  <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa công việc này?')">Xóa</button>
-                </form>
-              </td>
-              <td style="width:180px;">
-                <div class="progress">
-                  <div class="progress-bar {{ $task->progress == 100 ? 'bg-success' : 'bg-info' }}" 
-                       role="progressbar" 
-                       style="width: {{ $task->progress ?? 0 }}%">
-                    {{ $task->progress ?? 0 }}%
+        <!-- Form thêm nhân viên -->
+        <form id="employeeForm" action="{{ route('nhansu.store') }}" method="POST" class="row g-3 mb-4">
+          @csrf
+          <div class="col-md-3">
+            <input type="text" name="name" class="form-control" placeholder="Tên nhân viên" required>
+            <div class="error-message" id="name-error">Vui lòng nhập tên nhân viên.</div>
+          </div>
+          <div class="col-md-3">
+            <input type="text" name="phone" class="form-control" placeholder="Số điện thoại" required>
+            <div class="error-message" id="phone-error">Vui lòng nhập số điện thoại hợp lệ.</div>
+          </div>
+          <div class="col-md-3">
+            <input type="email" name="email" class="form-control" placeholder="Email (tùy chọn)">
+          </div>
+          <div class="col-md-3">
+            <select name="role" class="form-control" required>
+              <option value="director">Giám đốc</option>
+              <option value="manager">Quản lý</option>
+              <option value="staff" selected>Nhân viên thường</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <select name="manager_id" class="form-control">
+              <option value="">Không có quản lý</option>
+              @foreach($managers as $manager)
+                <option value="{{ $manager->id }}">{{ $manager->name }}</option>
+              @endforeach
+            </select>
+          </div>
+          <div class="col-md-3">
+            <input type="password" name="password" class="form-control" placeholder="Mật khẩu" required>
+            <div class="error-message" id="password-error">Vui lòng nhập mật khẩu.</div>
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Thêm</button>
+          </div>
+        </form>
+
+        <!-- Bảng nhân viên -->
+        <table class="table table-bordered table-hover" id="employeeTable">
+          <thead class="table-dark">
+            <tr>
+              <th>ID</th>
+              <th>Tên</th>
+              <th>Số điện thoại</th>
+              <th>Email</th>
+              <th>Vai trò</th>
+              <th>Quản lý</th>
+              <th>Ngày tạo</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            @forelse($employees as $employee)
+              <tr data-role="{{ $employee->role }}">
+                <td>{{ $employee->id }}</td>
+                <td>{{ $employee->name }}</td>
+                <td>{{ $employee->phone }}</td>
+                <td>{{ $employee->email ?? 'Chưa có' }}</td>
+                <td>
+                  @if($employee->role == 'director')
+                    <span class="badge bg-primary">Giám đốc</span>
+                  @elseif($employee->role == 'manager')
+                    <span class="badge bg-warning text-dark">Quản lý</span>
+                  @else
+                    <span class="badge bg-secondary">Nhân viên thường</span>
+                  @endif
+                </td>
+                <td>{{ $employee->manager ? $employee->manager->name : 'Không có' }}</td>
+                <td>{{ $employee->created_at->format('d/m/Y') }}</td>
+                <td>
+                  <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ $employee->id }}">Sửa</button>
+                  <form action="{{ route('nhansu.destroy', $employee) }}" method="POST" class="d-inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa nhân viên này?')">Xóa</button>
+                  </form>
+                </td>
+              </tr>
+
+              <!-- Modal sửa nhân viên -->
+              <div class="modal fade" id="editModal{{ $employee->id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <form action="{{ route('nhansu.update', $employee) }}" method="POST">
+                      @csrf
+                      @method('PUT')
+                      <div class="modal-header" style="background: linear-gradient(90deg, #3498db, #1abc9c); color: white;">
+                        <h5 class="modal-title">Chỉnh sửa nhân viên</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                      </div>
+                      <div class="modal-body">
+                        <div class="mb-3">
+                          <label class="form-label">Tên nhân viên</label>
+                          <input type="text" name="name" class="form-control" value="{{ $employee->name }}" required>
+                          <div class="error-message" id="edit-name-error{{ $employee->id }}">Vui lòng nhập tên nhân viên.</div>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label">Số điện thoại</label>
+                          <input type="text" name="phone" class="form-control" value="{{ $employee->phone }}" required>
+                          <div class="error-message" id="edit-phone-error{{ $employee->id }}">Vui lòng nhập số điện thoại hợp lệ.</div>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label">Email</label>
+                          <input type="email" name="email" class="form-control" value="{{ $employee->email }}">
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label">Vai trò</label>
+                          <select name="role" class="form-control" required>
+                            <option value="director" {{ $employee->role == 'director' ? 'selected' : '' }}>Giám đốc</option>
+                            <option value="manager" {{ $employee->role == 'manager' ? 'selected' : '' }}>Quản lý</option>
+                            <option value="staff" {{ $employee->role == 'staff' ? 'selected' : '' }}>Nhân viên thường</option>
+                          </select>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label">Quản lý</label>
+                          <select name="manager_id" class="form-control">
+                            <option value="">Không có quản lý</option>
+                            @foreach($managers as $manager)
+                              <option value="{{ $manager->id }}" {{ $employee->manager_id == $manager->id ? 'selected' : '' }}>{{ $manager->name }}</option>
+                            @endforeach
+                          </select>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label">Mật khẩu (để trống nếu không đổi)</label>
+                          <input type="password" name="password" class="form-control" placeholder="Mật khẩu mới">
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Lưu</button>
+                      </div>
+                    </form>
                   </div>
                 </div>
-              </td>
-            </tr>
-
-            <!-- Modal sửa -->
-            <div class="modal fade" id="editModal{{ $task->id }}" tabindex="-1" aria-hidden="true">
-              <div class="modal-dialog">
-                <div class="modal-content">
-                  <form action="{{ route('tasks.update', $task) }}" method="POST">
-                    @csrf
-                    @method('PUT')
-                    <div class="modal-header">
-                      <h5 class="modal-title">Chỉnh sửa công việc</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                      <div class="mb-3">
-                        <label class="form-label">Tên công việc</label>
-                        <input type="text" name="title" class="form-control" value="{{ $task->title }}" required>
-                        <div class="error-message" id="edit-title-error{{ $task->id }}">Vui lòng nhập tên công việc.</div>
-                      </div>
-                      <div class="mb-3">
-                        <label class="form-label">Trạng thái</label>
-                        <select name="status" class="form-control">
-                          <option value="pending" {{ $task->status == 'pending' ? 'selected' : '' }}>Chờ xử lý</option>
-                          <option value="in_progress" {{ $task->status == 'in_progress' ? 'selected' : '' }}>Đang làm</option>
-                          <option value="completed" {{ $task->status == 'completed' ? 'selected' : '' }}>Hoàn thành</option>
-                          <option value="overdue" {{ $task->status == 'overdue' ? 'selected' : '' }}>Quá hạn</option>
-                        </select>
-                      </div>
-                      <div class="mb-3">
-                        <label class="form-label">Hạn chót</label>
-                        <input type="date" name="deadline" class="form-control" value="{{ $task->deadline }}">
-                      </div>
-                      <div class="mb-3">
-                        <label class="form-label">Tiến độ (%)</label>
-                        <input type="number" name="progress" min="0" max="100" class="form-control" value="{{ $task->progress ?? 0 }}">
-                        <div class="error-message" id="edit-progress-error{{ $task->id }}">Tiến độ phải từ 0 đến 100.</div>
-                      </div>
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                      <button type="submit" class="btn btn-primary">Lưu</button>
-                    </div>
-                  </form>
-                </div>
               </div>
-            </div>
-          @empty
-            <tr>
-              <td colspan="7" class="text-center">Chưa có công việc nào.</td>
-            </tr>
-          @endforelse
-        </tbody>
-      </table>
+            @empty
+              <tr>
+                <td colspan="8" class="text-center">Chưa có nhân viên nào.</td>
+              </tr>
+            @endforelse
+          </tbody>
+        </table>
 
-      <!-- Phân trang -->
-      @if($tasks instanceof \Illuminate\Pagination\LengthAwarePaginator)
-        <div class="mt-3">
-          {{ $tasks->links() }}
-        </div>
-      @endif
+        <!-- Phân trang -->
+        @if($employees instanceof \Illuminate\Pagination\LengthAwarePaginator)
+          <div class="mt-3">
+            {{ $employees->links() }}
+          </div>
+        @endif
+      </div>
     </div>
   </div>
 
   <!-- JavaScript -->
   <script>
-    // Kiểm tra form thêm công việc
-    document.getElementById('taskForm').addEventListener('submit', function (e) {
-      const title = document.querySelector('input[name="title"]').value;
-      const progress = document.querySelector('input[name="progress"]').value;
-      const titleError = document.getElementById('title-error');
-      const progressError = document.getElementById('progress-error');
+    // Kiểm tra form thêm nhân viên
+    document.getElementById('employeeForm').addEventListener('submit', function (e) {
+      const name = document.querySelector('input[name="name"]').value;
+      const phone = document.querySelector('input[name="phone"]').value;
+      const password = document.querySelector('input[name="password"]').value;
+      const nameError = document.getElementById('name-error');
+      const phoneError = document.getElementById('phone-error');
+      const passwordError = document.getElementById('password-error');
       let hasError = false;
 
       // Reset thông báo lỗi
-      titleError.style.display = 'none';
-      progressError.style.display = 'none';
+      nameError.style.display = 'none';
+      phoneError.style.display = 'none';
+      passwordError.style.display = 'none';
 
-      if (!title.trim()) {
-        titleError.style.display = 'block';
+      if (!name.trim()) {
+        nameError.style.display = 'block';
         hasError = true;
       }
 
-      if (progress && (progress < 0 || progress > 100)) {
-        progressError.style.display = 'block';
+      if (!phone.trim() || !/^\d{10,11}$/.test(phone)) {
+        phoneError.style.display = 'block';
+        phoneError.innerText = 'Số điện thoại phải có 10-11 chữ số.';
+        hasError = true;
+      }
+
+      if (!password.trim() || password.length < 8) {
+        passwordError.style.display = 'block';
+        passwordError.innerText = 'Mật khẩu phải có ít nhất 8 ký tự.';
         hasError = true;
       }
 
@@ -400,26 +452,27 @@
       }
     });
 
-    // Kiểm tra form chỉnh sửa công việc
-    document.querySelectorAll('form[action*="/tasks/"]').forEach(form => {
+    // Kiểm tra form chỉnh sửa nhân viên
+    document.querySelectorAll('form[action*="/nhansu/"]').forEach(form => {
       form.addEventListener('submit', function (e) {
-        const title = form.querySelector('input[name="title"]').value;
-        const progress = form.querySelector('input[name="progress"]').value;
-        const titleError = form.querySelector('[id*="edit-title-error"]');
-        const progressError = form.querySelector('[id*="edit-progress-error"]');
+        const name = form.querySelector('input[name="name"]').value;
+        const phone = form.querySelector('input[name="phone"]').value;
+        const nameError = form.querySelector('[id*="edit-name-error"]');
+        const phoneError = form.querySelector('[id*="edit-phone-error"]');
         let hasError = false;
 
         // Reset thông báo lỗi
-        titleError.style.display = 'none';
-        progressError.style.display = 'none';
+        nameError.style.display = 'none';
+        phoneError.style.display = 'none';
 
-        if (!title.trim()) {
-          titleError.style.display = 'block';
+        if (!name.trim()) {
+          nameError.style.display = 'block';
           hasError = true;
         }
 
-        if (progress && (progress < 0 || progress > 100)) {
-          progressError.style.display = 'block';
+        if (!phone.trim() || !/^\d{10,11}$/.test(phone)) {
+          phoneError.style.display = 'block';
+          phoneError.innerText = 'Số điện thoại phải có 10-11 chữ số.';
           hasError = true;
         }
 
@@ -432,51 +485,55 @@
     // Tìm kiếm và lọc bảng
     function filterTable() {
       const searchInput = document.getElementById('searchInput').value.toLowerCase();
-      const statusFilter = document.getElementById('statusFilter').value;
-      const rows = document.querySelectorAll('#taskTable tbody tr');
+      const roleFilter = document.getElementById('roleFilter').value;
+      const rows = document.querySelectorAll('#employeeTable tbody tr');
 
       rows.forEach(row => {
-        const title = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-        const status = row.getAttribute('data-status');
-        const matchesSearch = title.includes(searchInput);
-        const matchesStatus = !statusFilter || status === statusFilter;
+        const name = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+        const role = row.getAttribute('data-role');
+        const matchesSearch = name.includes(searchInput);
+        const matchesRole = !roleFilter || role === roleFilter;
 
-        row.style.display = matchesSearch && matchesStatus ? '' : 'none';
+        row.style.display = matchesSearch && matchesRole ? '' : 'none';
       });
     }
 
     document.getElementById('searchInput').addEventListener('input', filterTable);
-    document.getElementById('statusFilter').addEventListener('change', filterTable);
+    document.getElementById('roleFilter').addEventListener('change', filterTable);
 
     // Khởi tạo biểu đồ cột
     document.addEventListener('DOMContentLoaded', function () {
-      const ctx = document.getElementById('taskChart');
+      const ctx = document.getElementById('employeeChart');
       if (ctx) {
         new Chart(ctx, {
           type: 'bar',
           data: {
-            labels: ['Hoàn thành', 'Đang làm', 'Quá hạn'],
+            labels: ['Giám đốc', 'Quản lý', 'Nhân viên thường'],
             datasets: [{
-              label: 'Số lượng công việc',
-              data: [{{ $completed ?? 0 }}, {{ $inProgress ?? 0 }}, {{ $overdue ?? 0 }}],
-              backgroundColor: ['#2ecc71', '#f1c40f', '#e74c3c'],
-              borderColor: ['#27ae60', '#e67e22', '#c0392b'],
+              label: 'Số lượng nhân viên',
+              data: [{{ $directorsCount ?? 0 }}, {{ $managersCount ?? 0 }}, {{ $staffCount ?? 0 }}],
+              backgroundColor: ['#2ecc71', '#f1c40f', '#3498db'],
+              borderColor: ['#27ae60', '#e67e22', '#2980b9'],
               borderWidth: 1
             }]
           },
           options: {
+            responsive: true,
+            maintainAspectRatio: false,
             scales: {
               y: {
                 beginAtZero: true,
                 title: {
                   display: true,
-                  text: 'Số lượng công việc'
+                  text: 'Số lượng nhân viên',
+                  font: { size: 14 }
                 }
               },
               x: {
                 title: {
                   display: true,
-                  text: 'Trạng thái'
+                  text: 'Vai trò',
+                  font: { size: 14 }
                 }
               }
             },
@@ -485,11 +542,14 @@
                 display: false
               },
               tooltip: {
+                backgroundColor: '#2c3e50',
+                titleFont: { size: 14 },
+                bodyFont: { size: 12 },
                 callbacks: {
                   label: function(context) {
                     let label = context.dataset.label || '';
                     let value = context.parsed.y || 0;
-                    return `${label}: ${value} công việc`;
+                    return `${label}: ${value} nhân viên`;
                   }
                 }
               }
@@ -499,26 +559,21 @@
       }
     });
 
+    // Cập nhật ngày giờ
     function updateDateTime() {
-        const now = new Date();
+      const now = new Date();
+      const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+      const dayName = days[now.getDay()];
+      const date = now.getDate();
+      const month = now.getMonth() + 1;
+      const year = now.getFullYear();
+      const formattedDate = `${dayName}, ${date} tháng ${month}, ${year}`;
+      const time = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-        // Lấy ngày (vd: Thứ Hai, 22 tháng 9, 2025)
-        const days = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
-        const dayName = days[now.getDay()];
-        const date = now.getDate();
-        const month = now.getMonth() + 1;
-        const year = now.getFullYear();
-        const formattedDate = `${dayName}, ${date} tháng ${month}, ${year}`;
-
-        // Lấy giờ (hh:mm:ss)
-        const time = now.toLocaleTimeString('vi-VN');
-
-        // Hiển thị vào các thẻ
-        document.querySelectorAll("#currentDate").forEach(el => el.innerText = formattedDate);
-        document.querySelectorAll("#currentTime").forEach(el => el.innerText = time);
+      document.querySelectorAll("#currentDate").forEach(el => el.innerText = formattedDate);
+      document.querySelectorAll("#currentTime").forEach(el => el.innerText = time);
     }
 
-    // Cập nhật mỗi giây
     setInterval(updateDateTime, 1000);
     updateDateTime();
   </script>

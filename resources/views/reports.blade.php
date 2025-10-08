@@ -7,84 +7,15 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="{{ asset('css/style.css') }}">
   <link rel="icon" href="{{ asset('favicon_io/favicon-32x32.png') }}" type="image/png">
   <style>
-    body {
-      background-color: #f6f8fb;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    a { text-decoration: none; }
-
-    /* Sidebar */
-    .sidebar {
-      height: 100vh;
-      background: linear-gradient(180deg, #1976f3, #0d47a1);
-      color: white;
-      padding: 20px 15px;
-      position: fixed;
-      width: 240px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      border-radius: 0 20px 20px 0;
-    }
-    .sidebar h2 {
-      font-size: 20px;
-      font-weight: 600;
-      margin-bottom: 20px;
-    }
-    .sidebar a {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 14px;
-      color: #ecf0f1;
-      border-radius: 12px;
-      margin-bottom: 8px;
-      transition: all 0.3s;
-      font-weight: 500;
-    }
-    .sidebar a:hover, .sidebar a.active {
-      background: rgba(255, 255, 255, 0.2);
-      color: #fff;
-    }
-
-    /* Profile */
-    .profile {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      padding: 8px;
-      display: flex;
-      align-items: center;
-      transition: background 0.3s;
-    }
-    .profile img {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #fff;
-    }
-    .profile h6 {
-      font-size: 14px;
-      font-weight: 600;
-      margin: 0;
-    }
-    .btn-logout {
-      background: transparent;
-      border: none;
-      color: #fff;
-      font-size: 18px;
-      margin-left: 8px;
-      transition: color 0.3s;
-    }
-    .btn-logout:hover { color: #e74c3c; }
-
     /* Content */
     .content {
       margin-left: 240px;
       padding: 25px;
       min-height: 100vh;
+      background: #f8f9fa;
     }
     h1 {
       font-size: 26px;
@@ -94,67 +25,148 @@
     }
 
     /* Cards */
-    .stat-card {
-      background: #fff;
+    .card {
       border: none;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      padding: 20px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       transition: transform 0.2s;
+      background: #ffffff;
     }
-    .stat-card:hover { transform: translateY(-4px); }
-    .stat-card h5 { font-size: 16px; color: #7f8c8d; }
-    .stat-card h2 { font-size: 28px; font-weight: bold; margin-top: 10px; }
+    .card:hover {
+      transform: translateY(-5px);
+    }
+    .card-header {
+      background: linear-gradient(90deg, #3498db, #1abc9c);
+      color: white;
+      font-weight: 600;
+      padding: 15px;
+      border-radius: 12px 12px 0 0;
+    }
+    .card-body {
+      padding: 20px;
+    }
+    .stat-card {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .stat-card:hover {
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+      transform: translateY(-4px);
+    }
+    .stat-card h5 {
+      font-size: 16px;
+      color: #7f8c8d;
+      margin-bottom: 10px;
+    }
+    .stat-card h2 {
+      font-size: 28px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin: 0;
+    }
 
     /* Filter */
     .filter {
       display: flex;
       gap: 15px;
       margin-bottom: 20px;
+      align-items: center;
     }
     .filter select, .filter button {
       border-radius: 8px;
       width: 200px;
     }
+    .filter .btn-primary {
+      background: linear-gradient(90deg, #3498db, #1abc9c);
+      border: none;
+    }
+    .filter .btn-primary:hover {
+      background: linear-gradient(90deg, #2980b9, #16a085);
+    }
+    .loading {
+      display: none;
+      color: #3498db;
+      font-size: 14px;
+      margin-left: 10px;
+    }
+    .loading i {
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Table */
+    .table {
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    .table thead {
+      background: #2c3e50;
+      color: white;
+    }
+    .table tbody tr {
+      transition: background-color 0.2s;
+    }
+    .table tbody tr:hover {
+      background-color: #f1f3f5;
+    }
+    .badge {
+      font-size: 0.9rem;
+      padding: 6px 10px;
+    }
+    .progress {
+      border-radius: 8px;
+      height: 20px;
+    }
+
+    /* Chart */
+    .chart-container {
+      position: relative;
+      width: 100%;
+      padding: 20px;
+    }
+    .chart-container canvas {
+      width: 100% !important;
+      height: auto !important;
+      max-height: 300px;
+    }
+
+    /* Responsive */
+    @media (max-width: 576px) {
+      .content {
+        margin-left: 0;
+        padding: 15px;
+      }
+      .filter {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .filter select, .filter button {
+        width: 100%;
+      }
+      .stat-card h2 {
+        font-size: 24px;
+      }
+      .table {
+        font-size: 0.85rem;
+      }
+      .chart-container canvas {
+        max-height: 250px;
+      }
+    }
   </style>
 </head>
 <body>
   <!-- Sidebar -->
-  <div class="sidebar">
-    <div>
-      <h2><i class="bi bi-kanban"></i> Quản lý</h2>
-      <a href="{{ route('home') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
-      <a href="{{ route('reports.index') }}" class="active"><i class="bi bi-clipboard-data"></i> Báo cáo</a>
-      <a href="{{ route('tasks.calendar') }}"><i class="bi bi-list-task"></i> Công việc</a>
-      <a href="#"><i class="bi bi-people"></i> Nhân sự</a>
-      <a href="#"><i class="bi bi-gear"></i> Cài đặt</a>
-    </div>
-
-    <!-- Profile -->
-    <div class="profile">
-      <img src="https://i.pravatar.cc/100" alt="Avatar" class="me-2">
-      <div class="flex-grow-1">
-        <h6>{{ Auth::user()->name ?? 'Người dùng' }}</h6>
-        <small>
-          @if(Auth::user() && Auth::user()->role)
-            @if(Auth::user()->role == 'director')
-              Giám đốc
-            @elseif(Auth::user()->role == 'manager')
-              Quản lý
-            @else
-              Nhân viên
-            @endif
-          @else
-            Không xác định
-          @endif
-        </small>
-      </div>
-      <form action="{{ route('logout') }}" method="POST">
-        @csrf
-        <button type="submit" class="btn-logout"><i class="bi bi-box-arrow-right"></i></button>
-      </form>
-    </div>
-  </div>
+  @include('layout.sidebar')
 
   <!-- Content -->
   <div class="content">
@@ -172,20 +184,28 @@
       </div>
     @endif
 
-    <h1>Báo cáo công việc</h1>
+    {{-- <h1>Báo cáo công việc</h1> --}}
 
     <!-- Bộ lọc thời gian và xuất PDF -->
-    <div class="filter">
-      <select id="timeFilter" class="form-control">
-        <option value="today">Hôm nay</option>
-        <option value="week">Tuần này</option>
-        <option value="month">Tháng này</option>
-      </select>
-      <a href="{{ route('reports.export') }}?period=today" id="exportPDF" class="btn btn-primary">Xuất PDF</a>
+    <div class="card mb-4">
+      <div class="card-header">Bộ lọc báo cáo</div>
+      <div class="card-body">
+        <div class="filter">
+          <select id="timeFilter" class="form-control">
+            <option value="today">Hôm nay</option>
+            <option value="week">Tuần này</option>
+            <option value="month">Tháng này</option>
+          </select>
+          <a href="{{ route('reports.export') }}?period=today" id="exportPDF" class="btn btn-primary">
+            <span class="text">Xuất PDF</span>
+            <span class="loading"><i class="bi bi-arrow-clockwise"></i> Đang xử lý...</span>
+          </a>
+        </div>
+      </div>
     </div>
 
     <!-- Thống kê -->
-    <div class="row g-3">
+    <div class="row g-3 mb-4">
       <div class="col-md-3">
         <div class="stat-card">
           <h5>Tổng công việc</h5>
@@ -194,146 +214,176 @@
       </div>
       <div class="col-md-3">
         <div class="stat-card">
-          <h5>Hoàn thành đúng hạn</h5>
-          <h2 id="completedOnTime">{{ $completedOnTime ?? 0 }}</h2>
+          <h5>Hoàn thành</h5>
+          <h2 id="completed">{{ $completed ?? 0 }}</h2>
         </div>
       </div>
       <div class="col-md-3">
         <div class="stat-card">
-          <h5>Tiến độ trung bình</h5>
-          <h2 id="avgProgress">{{ $avgProgress ?? 0 }}%</h2>
+          <h5>Đang thực hiện</h5>
+          <h2 id="inProgress">{{ $inProgress ?? 0 }}</h2>
         </div>
       </div>
       <div class="col-md-3">
         <div class="stat-card">
-          <h5>Tỷ lệ quá hạn</h5>
-          <h2 id="overdueRate">{{ $overdueRate ?? 0 }}%</h2>
+          <h5>Quá hạn</h5>
+          <h2 id="overdue">{{ $overdue ?? 0 }}</h2>
         </div>
       </div>
     </div>
 
     <!-- Biểu đồ tiến độ trung bình -->
-    <div class="card mt-4 p-4">
-      <h5>Tiến độ trung bình theo thời gian</h5>
-      @if(empty($progressData))
-        <p class="text-muted">Chưa có dữ liệu để hiển thị biểu đồ.</p>
-      @else
-        <canvas id="progressChart" height="100"></canvas>
-      @endif
+    <div class="card mt-4">
+      <div class="card-header">Tiến độ trung bình theo thời gian</div>
+      <div class="card-body">
+        <div class="chart-container">
+          @if(empty($progressData))
+            <p class="text-muted">Chưa có dữ liệu để hiển thị biểu đồ.</p>
+          @else
+            <canvas id="progressChart" height="100"></canvas>
+          @endif
+        </div>
+      </div>
     </div>
 
     <!-- Biểu đồ so sánh trạng thái -->
-    <div class="card mt-4 p-4">
-      <h5>So sánh trạng thái công việc</h5>
-      @if(empty($comparisonData))
-        <p class="text-muted">Chưa có dữ liệu để hiển thị biểu đồ.</p>
-      @else
-        <canvas id="comparisonChart" height="100"></canvas>
-      @endif
+    <div class="card mt-4">
+      <div class="card-header">So sánh trạng thái công việc</div>
+      <div class="card-body">
+        <div class="chart-container">
+          @if(empty($comparisonData))
+            <p class="text-muted">Chưa có dữ liệu để hiển thị biểu đồ.</p>
+          @else
+            <canvas id="comparisonChart" height="100"></canvas>
+          @endif
+        </div>
+      </div>
     </div>
 
     <!-- Thống kê theo người phụ trách -->
-    <div class="card mt-4 p-4">
-      <h5>Thống kê theo người phụ trách</h5>
-      <table class="table table-bordered table-hover" id="userStatsTable">
-        <thead class="table-dark">
-          <tr>
-            <th>Người phụ trách</th>
-            <th>Số công việc</th>
-            <th>Tiến độ trung bình</th>
-          </tr>
-        </thead>
-        <tbody id="userStatsBody">
-          @forelse($userStats as $stat)
+    <div class="card mt-4">
+      <div class="card-header">Thống kê theo người phụ trách</div>
+      <div class="card-body">
+        <table class="table table-bordered table-hover" id="userStatsTable">
+          <thead class="table-dark">
             <tr>
-              <td>{{ $stat->user ? $stat->user->name : 'Không xác định' }}</td>
-              <td>{{ $stat->total }}</td>
-              <td>{{ round($stat->avg_progress, 2) }}%</td>
+              <th>Người phụ trách</th>
+              <th>Số công việc</th>
+              <th>Tiến độ trung bình</th>
             </tr>
-          @empty
-            <tr>
-              <td colspan="3" class="text-center">Chưa có dữ liệu.</td>
-            </tr>
-          @endforelse
-        </tbody>
-      </table>
+          </thead>
+          <tbody id="userStatsBody">
+            @forelse($userStats as $stat)
+              @if($stat->user_id == Auth::id())
+                <tr>
+                  <td>{{ $stat->user ? ($stat->user->manager ? $stat->user->manager->name : 'Không có') : 'Không xác định' }}</td>
+                  <td>{{ $stat->total }}</td>
+                  <td>{{ round($stat->avg_progress, 2) }}%</td>
+                </tr>
+              @endif
+            @empty
+              <tr>
+                <td colspan="3" class="text-center">Chưa có dữ liệu.</td>
+              </tr>
+            @endforelse
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Danh sách công việc -->
-    <div class="card mt-4 p-4">
-      <h5>Danh sách công việc trong khoảng thời gian</h5>
-      <table class="table table-bordered table-hover" id="reportTable">
-        <thead class="table-dark">
-          <tr>
-            <th>ID</th>
-            <th>Tên công việc</th>
-            <th>Trạng thái</th>
-            <th>Hạn chót</th>
-            <th>Tiến độ</th>
-            <th>Người phụ trách</th>
-          </tr>
-        </thead>
-        <tbody id="reportTableBody">
-          @forelse($tasks as $task)
+    <div class="card mt-4">
+      <div class="card-header">Danh sách công việc trong khoảng thời gian</div>
+      <div class="card-body">
+        <table class="table table-bordered table-hover" id="reportTable">
+          <thead class="table-dark">
             <tr>
-              <td>{{ $task->id }}</td>
-              <td>{{ $task->title }}</td>
-              <td>
-                @if($task->status == 'completed')
-                  <span class="badge bg-success">Hoàn thành</span>
-                @elseif($task->status == 'in_progress')
-                  <span class="badge bg-warning text-dark">Đang làm</span>
-                @elseif($task->status == 'overdue')
-                  <span class="badge bg-danger">Quá hạn</span>
-                @else
-                  <span class="badge bg-secondary">Chờ xử lý</span>
-                @endif
-              </td>
-              <td>{{ $task->deadline }}</td>
-              <td style="width:180px;">
-                <div class="progress">
-                  <div class="progress-bar {{ $task->progress == 100 ? 'bg-success' : 'bg-info' }}" 
-                       role="progressbar" 
-                       style="width: {{ $task->progress ?? 0 }}%">
-                    {{ $task->progress ?? 0 }}%
-                  </div>
-                </div>
-              </td>
-              <td>{{ $task->user ? $task->user->name : 'Không xác định' }}</td>
+              <th>ID</th>
+              <th>Tên công việc</th>
+              <th>Trạng thái</th>
+              <th>Hạn chót</th>
+              <th>Tiến độ</th>
+              <th>Nhân viên</th>
+              <th>Người phụ trách</th>
             </tr>
-          @empty
-            <tr>
-              <td colspan="6" class="text-center">Chưa có công việc nào.</td>
-            </tr>
-          @endforelse
-        </tbody>
-      </table>
+          </thead>
+          <tbody id="reportTableBody">
+            @forelse($tasks as $task)
+              @if($task->user_id == Auth::id())
+                <tr>
+                  <td>{{ $task->id }}</td>
+                  <td>{{ $task->title }}</td>
+                  <td>
+                    @if($task->status == 'completed')
+                      <span class="badge bg-success">Hoàn thành</span>
+                    @elseif($task->status == 'in_progress')
+                      <span class="badge bg-warning text-dark">Đang làm</span>
+                    @elseif($task->status == 'overdue')
+                      <span class="badge bg-danger">Quá hạn</span>
+                    @else
+                      <span class="badge bg-secondary">Chờ xử lý</span>
+                    @endif
+                  </td>
+                  <td>{{ $task->deadline ? date('d/m/Y', strtotime($task->deadline)) : 'Chưa đặt' }}</td>
+                  <td style="width:180px;">
+                    <div class="progress">
+                      <div class="progress-bar {{ $task->progress == 100 ? 'bg-success' : 'bg-info' }}" 
+                           role="progressbar" 
+                           style="width: {{ $task->progress ?? 0 }}%">
+                        {{ $task->progress ?? 0 }}%
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ $task->user ? $task->user->name : 'Không xác định' }}</td>
+                  <td>{{ $task->user && $task->user->manager ? $task->user->manager->name : 'Không có' }}</td>
+                </tr>
+              @endif
+            @empty
+              <tr>
+                <td colspan="7" class="text-center">Chưa có công việc nào của bạn.</td>
+              </tr>
+            @endforelse
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
   <!-- JavaScript -->
   <script>
-    // Dữ liệu ban đầu từ server
+    // Dữ liệu ban đầu từ server (đã lọc theo user_id)
     const initialData = {
       today: {
         total: {{ $totalTasks ?? 0 }},
-        completedOnTime: {{ $completedOnTime ?? 0 }},
-        avgProgress: {{ $avgProgress ?? 0 }},
-        overdueRate: {{ $overdueRate ?? 0 }},
+        completed: {{ $completed ?? 0 }},
+        inProgress: {{ $inProgress ?? 0 }},
+        overdue: {{ $overdue ?? 0 }},
         progressData: {!! json_encode($progressData ?? []) !!},
         comparisonData: {!! json_encode($comparisonData ?? []) !!},
-        tasks: {!! json_encode($tasks ?? []) !!},
-        userStats: {!! json_encode($userStats->map(function($stat) {
+        tasks: {!! json_encode($tasks->filter(function($task) { return $task->user_id == Auth::id(); })->map(function($task) {
+            return [
+                'id' => $task->id,
+                'title' => $task->title,
+                'status' => $task->status,
+                'deadline' => $task->deadline ? date('d/m/Y', strtotime($task->deadline)) : 'Chưa đặt',
+                'progress' => $task->progress ?? 0,
+                'user_id' => $task->user_id,
+                'user_name' => $task->user ? $task->user->name : 'Không xác định',
+                'manager_name' => $task->user && $task->user->manager ? $task->user->manager->name : 'Không có'
+            ];
+        })->values() ?? []) !!},
+        userStats: {!! json_encode($userStats->filter(function($stat) { return $stat->user_id == Auth::id(); })->map(function($stat) {
             return [
                 'user_id' => $stat->user_id,
                 'user_name' => $stat->user ? $stat->user->name : 'Không xác định',
+                'manager_name' => $stat->user && $stat->user->manager ? $stat->user->manager->name : 'Không có',
                 'total' => $stat->total,
                 'avg_progress' => round($stat->avg_progress, 2)
             ];
         })->toArray()) !!}
       },
-      week: { total: 0, completedOnTime: 0, avgProgress: 0, overdueRate: 0, progressData: [], comparisonData: [], tasks: [], userStats: [] },
-      month: { total: 0, completedOnTime: 0, avgProgress: 0, overdueRate: 0, progressData: [], comparisonData: [], tasks: [], userStats: [] }
+      week: { total: 0, completed: 0, inProgress: 0, overdue: 0, progressData: [], comparisonData: [], tasks: [], userStats: [] },
+      month: { total: 0, completed: 0, inProgress: 0, overdue: 0, progressData: [], comparisonData: [], tasks: [], userStats: [] }
     };
 
     // Khởi tạo biểu đồ tiến độ trung bình (đường)
@@ -356,13 +406,18 @@
             }]
           },
           options: {
+            responsive: true,
+            maintainAspectRatio: false,
             scales: {
-              y: { beginAtZero: true, max: 100, title: { display: true, text: 'Tiến độ trung bình (%)' } },
-              x: { title: { display: true, text: 'Ngày' } }
+              y: { beginAtZero: true, max: 100, title: { display: true, text: 'Tiến độ trung bình (%)', font: { size: 14 } } },
+              x: { title: { display: true, text: 'Ngày', font: { size: 14 } } }
             },
             plugins: {
-              legend: { display: true, position: 'top' },
+              legend: { position: 'top', labels: { font: { size: 12 } } },
               tooltip: {
+                backgroundColor: '#2c3e50',
+                titleFont: { size: 14 },
+                bodyFont: { size: 12 },
                 callbacks: {
                   label: function(context) {
                     return `${context.dataset.label}: ${context.parsed.y}%`;
@@ -394,13 +449,18 @@
             }]
           },
           options: {
+            responsive: true,
+            maintainAspectRatio: false,
             scales: {
-              y: { beginAtZero: true, title: { display: true, text: 'Số lượng công việc' } },
-              x: { title: { display: true, text: 'Trạng thái' } }
+              y: { beginAtZero: true, title: { display: true, text: 'Số lượng công việc', font: { size: 14 } } },
+              x: { title: { display: true, text: 'Trạng thái', font: { size: 14 } } }
             },
             plugins: {
               legend: { display: false },
               tooltip: {
+                backgroundColor: '#2c3e50',
+                titleFont: { size: 14 },
+                bodyFont: { size: 12 },
                 callbacks: {
                   label: function(context) {
                     return `${context.dataset.label}: ${context.parsed.y} công việc`;
@@ -417,11 +477,13 @@
     function updateTable(tasks) {
       const tbody = document.getElementById('reportTableBody');
       tbody.innerHTML = '';
-      if (tasks.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center">Chưa có công việc nào.</td></tr>';
+      const currentUserId = {{ Auth::id() }};
+      const filteredTasks = tasks.filter(task => task.user_id === currentUserId);
+      if (filteredTasks.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">Chưa có công việc nào của bạn.</td></tr>';
         return;
       }
-      tasks.forEach(task => {
+      filteredTasks.forEach(task => {
         const statusBadge = task.status === 'completed' ? '<span class="badge bg-success">Hoàn thành</span>' :
                            task.status === 'in_progress' ? '<span class="badge bg-warning text-dark">Đang làm</span>' :
                            task.status === 'overdue' ? '<span class="badge bg-danger">Quá hạn</span>' :
@@ -431,7 +493,7 @@
             <td>${task.id}</td>
             <td>${task.title}</td>
             <td>${statusBadge}</td>
-            <td>${task.deadline || ''}</td>
+            <td>${task.deadline}</td>
             <td style="width:180px;">
               <div class="progress">
                 <div class="progress-bar ${task.progress == 100 ? 'bg-success' : 'bg-info'}" 
@@ -441,7 +503,8 @@
                 </div>
               </div>
             </td>
-            <td>${task.user ? task.user.name : 'Không xác định'}</td>
+            <td>${task.user_name}</td>
+            <td>${task.manager_name}</td>
           </tr>`;
         tbody.innerHTML += row;
       });
@@ -451,14 +514,16 @@
     function updateUserStatsTable(userStats) {
       const tbody = document.getElementById('userStatsBody');
       tbody.innerHTML = '';
-      if (userStats.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="text-center">Chưa có dữ liệu.</td></tr>';
+      const currentUserId = {{ Auth::id() }};
+      const filteredStats = userStats.filter(stat => stat.user_id === currentUserId);
+      if (filteredStats.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center">Chưa có dữ liệu của bạn.</td></tr>';
         return;
       }
-      userStats.forEach(stat => {
+      filteredStats.forEach(stat => {
         const row = `
           <tr>
-            <td>${stat.user_name}</td>
+            <td>${stat.manager_name}</td>
             <td>${stat.total}</td>
             <td>${stat.avg_progress}%</td>
           </tr>`;
@@ -469,9 +534,9 @@
     // Cập nhật dashboard
     function updateDashboard(data) {
       document.getElementById('totalTasks').textContent = data.total;
-      document.getElementById('completedOnTime').textContent = data.completedOnTime;
-      document.getElementById('avgProgress').textContent = `${data.avgProgress}%`;
-      document.getElementById('overdueRate').textContent = `${data.overdueRate}%`;
+      document.getElementById('completed').textContent = data.completed;
+      document.getElementById('inProgress').textContent = data.inProgress;
+      document.getElementById('overdue').textContent = data.overdue;
       document.getElementById('exportPDF').href = `{{ route('reports.export') }}?period=${document.getElementById('timeFilter').value}`;
       initProgressChart(data);
       initComparisonChart(data);
@@ -479,20 +544,31 @@
       updateUserStatsTable(data.userStats);
     }
 
-    // Xử lý bộ lọc thời gian
+    // Xử lý bộ lọc thời gian với debounce
+    let timeout;
     document.getElementById('timeFilter').addEventListener('change', function() {
-      const period = this.value;
-      if (initialData[period].total !== 0) {
-        updateDashboard(initialData[period]);
-      } else {
-        fetch(`/reports/data?period=${period}`)
-          .then(response => response.json())
-          .then(data => {
-            initialData[period] = data;
-            updateDashboard(data);
-          })
-          .catch(error => console.error('Lỗi khi tải dữ liệu:', error));
-      }
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        const period = this.value;
+        const loading = document.querySelector('#exportPDF .loading');
+        loading.style.display = 'inline';
+        if (initialData[period].total !== 0) {
+          updateDashboard(initialData[period]);
+          loading.style.display = 'none';
+        } else {
+          fetch(`/reports/data?period=${period}`)
+            .then(response => response.json())
+            .then(data => {
+              initialData[period] = data;
+              updateDashboard(data);
+              loading.style.display = 'none';
+            })
+            .catch(error => {
+              console.error('Lỗi khi tải dữ liệu:', error);
+              loading.style.display = 'none';
+            });
+        }
+      }, 300);
     });
 
     // Khởi tạo ban đầu

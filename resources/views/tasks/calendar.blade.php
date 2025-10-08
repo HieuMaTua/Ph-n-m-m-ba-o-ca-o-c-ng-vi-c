@@ -1,453 +1,412 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quản lý công việc - Lịch</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@event-calendar/build/dist/event-calendar.min.css">
-  <link rel="icon" href="{{ asset('favicon_io/favicon-32x32.png') }}" type="image/png">
-
-  <script src="https://cdn.jsdelivr.net/npm/@event-calendar/build/dist/event-calendar.min.js"></script>
-  <style>
-    body {
-      background-color: #f6f8fb;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    a { text-decoration: none; }
-
-    /* Sidebar */
-    .sidebar {
-      height: 100vh;
-      background: linear-gradient(180deg, #1976f3, #0d47a1);
-      color: white;
-      padding: 20px 15px;
-      position: fixed;
-      width: 240px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      border-radius: 0 20px 20px 0;
-    }
-    .sidebar h2 {
-      font-size: 20px;
-      font-weight: 600;
-      margin-bottom: 20px;
-    }
-    .sidebar a {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 14px;
-      color: #ecf0f1;
-      border-radius: 12px;
-      margin-bottom: 8px;
-      transition: all 0.3s;
-      font-weight: 500;
-    }
-    .sidebar a:hover, .sidebar a.active {
-      background: rgba(255, 255, 255, 0.2);
-      color: #fff;
-    }
-
-    /* Profile */
-    .profile {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      padding: 8px;
-      display: flex;
-      align-items: center;
-      transition: background 0.3s;
-    }
-    .profile img {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #fff;
-    }
-    .profile h6 {
-      font-size: 14px;
-      font-weight: 600;
-      margin: 0;
-    }
-    .btn-logout {
-      background: transparent;
-      border: none;
-      color: #fff;
-      font-size: 18px;
-      margin-left: 8px;
-      transition: color 0.3s;
-    }
-    .btn-logout:hover { color: #e74c3c; }
-
-    /* Content */
-    .content {
-      margin-left: 240px;
-      padding: 0;
-      min-height: 100vh;
-    }
-    h1 {
-      font-size: 26px;
-      font-weight: 600;
-      color: #2c3e50;
-      margin: 25px;
-    }
-
-    /* Calendar */
-    #calendar {
-      max-width: 100%;
-      margin: 0;
-      height: calc(100vh - 80px);
-      padding: 20px;
-    }
-
-    /* Tùy chỉnh sự kiện */
-    .ec-event {
-      font-size: 11px; /* Giảm cỡ chữ để sự kiện gọn hơn */
-      padding: 2px 4px; /* Giảm padding */
-      border-radius: 3px; /* Bo góc nhẹ */
-      line-height: 1.3; /* Giảm khoảng cách dòng */
-      white-space: nowrap; /* Không xuống dòng */
-      overflow: hidden; /* Ẩn nội dung tràn */
-      text-overflow: ellipsis; /* Thêm dấu ... nếu nội dung dài */
-      margin-bottom: 2px; /* Khoảng cách giữa các sự kiện */
-      border: none; /* Bỏ viền mặc định */
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Thêm bóng nhẹ */
-    }
-
-    /* Đảm bảo sự kiện hiển thị cạnh nhau trong chế độ tháng */
-    .ec-day-grid .ec-event {
-      display: inline-block; /* Hiển thị cạnh nhau */
-      width: calc(50% - 4px); /* Chiếm 50% chiều rộng ô, trừ margin */
-      margin-right: 2px; /* Khoảng cách giữa các sự kiện */
-      vertical-align: top; /* Căn trên */
-    }
-
-    /* Tùy chỉnh cho chế độ tuần và ngày */
-    .ec-time-grid .ec-event {
-      font-size: 12px;
-      padding: 4px;
-      white-space: normal; /* Cho phép xuống dòng trong chế độ tuần/ngày */
-    }
-
-    /* Tùy chỉnh màu sắc theo trạng thái */
-    .ec-event[style*="background-color: rgb(46, 204, 113)"] { /* Hoàn thành */
-      background-color: #27ae60 !important;
-      color: white !important;
-    }
-    .ec-event[style*="background-color: rgb(241, 196, 15)"] { /* Đang làm */
-      background-color: #e67e22 !important;
-      color: white !important;
-    }
-    .ec-event[style*="background-color: rgb(231, 76, 60)"] { /* Quá hạn */
-      background-color: #c0392b !important;
-      color: white !important;
-    }
-    .ec-event[style*="background-color: rgb(127, 140, 141)"] { /* Chờ xử lý */
-      background-color: #6c757d !important;
-      color: white !important;
-    }
-
-    /* Error message */
-    .error-message {
-      display: none;
-      color: #e74c3c;
-      font-size: 14px;
-      margin-top: 5px;
-    }
-
-    /* Tùy chỉnh giao diện lịch giống hình ảnh */
-    .ec-time-grid .ec-event {
-      border: 1px solid rgba(0,0,0,0.1);
-      border-radius: 4px;
-      padding: 4px;
-      font-size: 12px;
-      color: #333;
-    }
-
-    .ec-time-grid .ec-resource-group {
-      background-color: #f0f0f0;
-      font-weight: bold;
-    }
-
-    .ec-time-grid .ec-resource {
-      border-right: 1px solid #ddd;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách công việc</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="icon" href="{{ asset('favicon_io/favicon-32x32.png') }}" type="image/png">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <style>
+        .loading-spinner {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1050;
+        }
+        .table th, .table td {
+            vertical-align: middle;
+        }
+        .badge {
+            font-size: 0.9em;
+        }
+    </style>
 </head>
 <body>
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <div>
-      <h2><i class="bi bi-kanban"></i> Quản lý</h2>
-      <a href="{{ route('home') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
-      <a href="{{ route('reports.index') }}"><i class="bi bi-clipboard-data"></i> Báo cáo</a>
-      <a href="{{ route('tasks.calendar') }}" class="active"><i class="bi bi-list-task"></i> Công việc</a>
-      <a href="#"><i class="bi bi-people"></i> Nhân sự</a>
-      <a href="#"><i class="bi bi-gear"></i> Cài đặt</a>
-    </div>
-    <div class="profile">
-      <img src="https://i.pravatar.cc/100" alt="Avatar" class="me-2">
-      <div class="flex-grow-1">
-        <h6>{{ Auth::user()->name ?? 'Người dùng' }}</h6>
-        <small>
-            @if(Auth::user() && Auth::user()->role)
-              @if(Auth::user()->role == 'director')
-                Giám đốc
-              @elseif(Auth::user()->role == 'manager')
-                Quản lý
-              @else
-                Nhân viên
-              @endif
-            @else
-              Không xác định
-            @endif
-          </small>
-      </div>
-      <form action="{{ route('logout') }}" method="POST">
-        @csrf
-        <button type="submit" class="btn-logout"><i class="bi bi-box-arrow-right"></i></button>
-      </form>
-    </div>
-  </div>
+    <!-- Sidebar -->
+    @include('layout.sidebar')
 
-  <!-- Content -->
-  <div class="content">
-    <div id="calendar"></div>
+    <!-- Content -->
+    <div class="content">
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
 
-    <!-- Modal chỉnh sửa công việc -->
-    <div class="modal fade" id="editTaskModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form id="editTaskForm" action="{{ route('tasks.update', ':id') }}" method="POST">
-            @csrf
-            @method('PUT')
-            <div class="modal-header">
-              <h5 class="modal-title">Chỉnh sửa công việc</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-              <input type="hidden" name="id">
-              <div class="mb-3">
-                <label class="form-label">Tên công việc</label>
-                <input type="text" name="title" class="form-control" required>
-                <div class="error-message" id="edit-title-error">Vui lòng nhập tên công việc.</div>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Trạng thái</label>
-                <select name="status" class="form-control">
-                  <option value="pending">Chờ xử lý</option>
-                  <option value="in_progress">Đang làm</option>
-                  <option value="completed">Hoàn thành</option>
-                  <option value="overdue">Quá hạn</option>
-                </select>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Thời gian bắt đầu</label>
-                <input type="datetime-local" name="start" class="form-control" required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Thời gian kết thúc</label>
-                <input type="datetime-local" name="end" class="form-control" required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Hạn chót</label>
-                <input type="date" name="deadline" class="form-control" required>
-                <div class="error-message" id="edit-deadline-error">Vui lòng chọn ngày hợp lệ.</div>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Tiến độ (%)</label>
-                <input type="number" name="progress" min="0" max="100" class="form-control">
-                <div class="error-message" id="edit-progress-error">Tiến độ phải từ 0 đến 100.</div>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Giao cho nhân viên</label>
-                <select name="assigned_to" class="form-control" required>
-                  @foreach($users ?? [['id' => 1, 'name' => 'User A'], ['id' => 2, 'name' => 'User B'], ['id' => 3, 'name' => 'User C']] as $user)
-                    <option value="{{ $user['id'] }}">{{ $user['name'] }}</option>
-                  @endforeach
-                </select>
-                <div class="error-message" id="edit-assigned-to-error">Vui lòng chọn nhân viên.</div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <form action="{{ route('tasks.destroy', ':id') }}" method="POST" class="d-inline">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-danger" id="deleteTask">Xóa</button>
-              </form>
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-              <button type="submit" class="btn btn-primary">Lưu</button>
-            </div>
-          </form>
+        <h1>Thêm Công Việc</h1>
+
+        <div class="search-filter mb-4">
+            <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm công việc..." aria-label="Tìm kiếm công việc" style="width: 300px; display: inline-block; margin-right: 10px;">
+            <select id="statusFilter" class="form-control" aria-label="Lọc theo trạng thái" style="width: 200px; display: inline-block; margin-right: 10px;">
+                <option value="">Tất cả trạng thái</option>
+                <option value="pending">Chờ xử lý</option>
+                <option value="in_progress">Đang làm</option>
+                <option value="completed">Hoàn thành</option>
+                <option value="overdue">Quá hạn</option>
+            </select>
+            <select id="roleFilter" class="form-control" aria-label="Lọc theo chức vụ" style="width: 200px; display: inline-block;">
+                <option value="">Tất cả chức vụ</option>
+                <option value="director">Giám đốc</option>
+                <option value="manager">Quản lý</option>
+                <option value="staff">Nhân viên</option>
+            </select>
         </div>
-      </div>
+
+        <form id="taskForm" action="{{ route('tasks.store') }}" method="POST" class="row g-3 mb-4" enctype="multipart/form-data">
+            @csrf
+            <input type="hidden" name="status" value="pending">
+            <div class="col-md-3">
+                <input type="text" name="title" class="form-control" placeholder="Tên công việc" aria-label="Tên công việc" required>
+                <div class="error-message" id="title-error" style="color: red; font-size: 0.875em; display: none;">Vui lòng nhập tên công việc.</div>
+            </div>
+            <div class="col-md-3">
+                <input type="date" name="deadline" class="form-control" aria-label="Hạn chót">
+            </div>
+            <div class="col-md-3">
+                @if(Auth::user()->role == 'staff')
+                    <div class="progress" style="height: 38px;">
+                        <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                    </div>
+                    <input type="hidden" name="progress" value="0">
+                @else
+                    <input type="number" name="progress" min="0" max="100" class="form-control" placeholder="% tiến độ" aria-label="% tiến độ">
+                @endif
+                <div class="error-message" id="progress-error" style="color: red; font-size: 0.875em; display: none;">Tiến độ phải từ 0 đến 100.</div>
+            </div>
+            <div class="col-md-2">
+                <input type="file" name="files[]" class="form-control" accept=".pdf,.doc,.docx,.jpg,.png" aria-label="Tệp đính kèm" multiple>
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary w-100">Thêm</button>
+            </div>
+        </form>
+
+        <h2>Công việc của tôi</h2>
+        <div class="task-table-section">
+            <table class="table table-bordered table-hover" id="taskTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nhân viên</th>
+                        <th>Tên công việc</th>
+                        <th>Chức vụ</th>
+                        <th>Thuộc quản lý</th>
+                        <th>Hạn chót</th>
+                        <th>Ngày tạo</th>
+                        <th>Trạng thái</th>
+                        <th>Người tham gia</th>
+                        <th>Hành động</th>
+                        <th>Tiến độ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($tasks as $task)
+                        @if(Auth::user()->role == 'director' || $task->user_id == Auth::user()->id)
+                            @include('tasks.row', ['task' => $task, 'isOwnTask' => true])
+                        @endif
+                    @endforeach
+                    @if(Auth::user()->role == 'director' && $tasks->isEmpty() || Auth::user()->role != 'director' && $tasks->where('user_id', Auth::user()->id)->isEmpty())
+                        <tr><td colspan="11" class="text-center">Chưa có công việc.</td></tr>
+                    @endif
+                </tbody>
+            </table>
+        </div>
+
+        @if($tasks instanceof \Illuminate\Pagination\LengthAwarePaginator)
+            <div class="mt-3">{{ $tasks->links() }}</div>
+        @endif
+
+        @if(Auth::user()->role == 'staff')
+            <h2 class="mt-5">Công việc của đồng nghiệp đã tham gia</h2>
+            <div class="task-table-section">
+                <table class="table table-bordered table-hover" id="joinedTaskTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nhân viên</th>
+                            <th>Tên công việc</th>
+                            <th>Chức vụ</th>
+                            <th>Thuộc quản lý</th>
+                            <th>Hạn chót</th>
+                            <th>Ngày tạo</th>
+                            <th>Trạng thái</th>
+                            <th>Người tham gia</th>
+                            <th>Hành động</th>
+                            <th>Tiến độ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($tasks as $task)
+                            @php
+                                $isParticipant = false;
+                                if ($task->participants) {
+                                    foreach ($task->participants as $participant) {
+                                        if ($participant['user_id'] == Auth::user()->id) {
+                                            $isParticipant = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            @endphp
+                            @if($task->user_id != Auth::user()->id && $isParticipant)
+                                @include('tasks.row', ['task' => $task, 'isOwnTask' => false])
+                            @endif
+                        @endforeach
+                        @if($tasks->where('user_id', '!=', Auth::user()->id)->filter(function($task) {
+                            return collect($task->participants)->contains('user_id', Auth::user()->id);
+                        })->isEmpty())
+                            <tr><td colspan="11" class="text-center">Chưa tham gia công việc nào của đồng nghiệp.</td></tr>
+                        @endif
+                    </tbody>
+                </table>
+            </div>
+
+            <h2 class="mt-5">Công việc của đồng nghiệp (có thể tham gia)</h2>
+            <div class="task-table-section">
+                <table class="table table-bordered table-hover" id="colleagueTaskTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nhân viên</th>
+                            <th>Tên công việc</th>
+                            <th>Chức vụ</th>
+                            <th>Thuộc quản lý</th>
+                            <th>Hạn chót</th>
+                            <th>Ngày tạo</th>
+                            <th>Trạng thái</th>
+                            <th>Người tham gia</th>
+                            <th>Hành động</th>
+                            <th>Tiến độ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($tasks as $task)
+                            @php
+                                $isParticipant = false;
+                                if ($task->participants) {
+                                    foreach ($task->participants as $participant) {
+                                        if ($participant['user_id'] == Auth::user()->id) {
+                                            $isParticipant = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            @endphp
+                            @if($task->user_id != Auth::user()->id && !$isParticipant)
+                                @include('tasks.row', ['task' => $task, 'isOwnTask' => false])
+                            @endif
+                        @endforeach
+                        @if($tasks->where('user_id', '!=', Auth::user()->id)->filter(function($task) {
+                            return !collect($task->participants)->contains('user_id', Auth::user()->id);
+                        })->isEmpty())
+                            <tr><td colspan="11" class="text-center">Chưa có công việc của đồng nghiệp để tham gia.</td></tr>
+                        @endif
+                    </tbody>
+                </table>
+            </div>
+
+            @if($tasks instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                <div class="mt-3">{{ $tasks->links() }}</div>
+            @endif
+        @endif
     </div>
-  </div>
 
-  <script>
-    // Dữ liệu nhân viên (từ $users hoặc mẫu)
-    const resources = [
-      { id: 'br-23', title: 'BR', dayGroup: '2025-09-23' },
-      { id: 'jw-23', title: 'JW', dayGroup: '2025-09-23' },
-      { id: 'ps-23', title: 'PS', dayGroup: '2025-09-23' },
-      { id: 'br-24', title: 'BR', dayGroup: '2025-09-24' },
-      { id: 'jw-24', title: 'JW', dayGroup: '2025-09-24' },
-      { id: 'ps-24', title: 'PS', dayGroup: '2025-09-24' },
-      { id: 'br-25', title: 'BR', dayGroup: '2025-09-25' },
-      { id: 'jw-25', title: 'JW', dayGroup: '2025-09-25' },
-      { id: 'ps-25', title: 'PS', dayGroup: '2025-09-25' },
-      { id: 'br-26', title: 'BR', dayGroup: '2025-09-26' },
-      { id: 'jw-26', title: 'JW', dayGroup: '2025-09-26' },
-      { id: 'ps-26', title: 'PS', dayGroup: '2025-09-26' }
-    ];
+    <!-- Modal Tham Gia Công Việc -->
+    <div class="modal fade" id="joinTaskModal" tabindex="-1" aria-labelledby="joinTaskModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="joinTaskModalLabel">Tham Gia Công Việc</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="joinTaskForm" method="POST" action="{{ route('task_requests.store') }}">
+                        @csrf
+                        <input type="hidden" name="task_id" id="joinTaskId">
+                        <div class="mb-3">
+                            <label for="joinRole" class="form-label">Vai trò của bạn</label>
+                            <select name="role" id="joinRole" class="form-control" required>
+                                <option value="">Chọn vai trò</option>
+                                <option value="assistant">Trợ lý</option>
+                                <option value="contributor">Người đóng góp</option>
+                                <option value="reviewer">Người đánh giá</option>
+                            </select>
+                            <div class="error-message" id="joinRole-error" style="color: red; font-size: 0.875em; display: none;">Vui lòng chọn vai trò.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="joinInfo" class="form-label">Thông tin thêm (lý do tham gia)</label>
+                            <textarea name="info" id="joinInfo" class="form-control" rows="3" required></textarea>
+                            <div class="error-message" id="joinInfo-error" style="color: red; font-size: 0.875em; display: none;">Vui lòng nhập thông tin.</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Gửi Yêu Cầu</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    // Dữ liệu công việc (từ $tasks hoặc mẫu, cập nhật với thời gian)
-    const tasks = [
-      @forelse($tasks as $task)
-        {
-          id: {{ $task->id }},
-          title: '{{ $task->title }}',
-          status: '{{ $task->status }}',
-          start: '{{ $task->start ?? $task->deadline . 'T09:00' }}',
-          end: '{{ $task->end ?? $task->deadline . 'T10:00' }}',
-          progress: {{ $task->progress ?? 0 }},
-          created_at: '{{ $task->created_at->format('Y-m-d') }}',
-          assigned_to: '{{ $task->assigned_to ?? rand(1, 3) }}',
-          user_name: '{{ $task->user->name ?? 'User ' . rand(1, 3) }}'
-        },
-      @empty
-        { id: 1, title: 'Open Files Emergency Generator', start: '2025-09-23T06:00', end: '2025-09-23T08:30', resourceId: 'br-23', status: 'completed', backgroundColor: '#ffcccb' },
-        { id: 2, title: 'Meeting w/ Josh David Main', start: '2025-09-23T05:30', end: '2025-09-23T12:00', resourceId: 'jw-23', status: 'in_progress', backgroundColor: '#90ee90' },
-        { id: 3, title: 'Physio Lab', start: '2025-09-23T06:15', end: '2025-09-23T07:00', resourceId: 'ps-23', status: 'pending', backgroundColor: '#add8e6' },
-        { id: 4, title: 'AC Current Overland Jo', start: '2025-09-24T07:00', end: '2025-09-24T10:00', resourceId: 'br-24', status: 'overdue', backgroundColor: '#ffa07a' },
-        // Thêm các sự kiện mẫu khác dựa trên hình ảnh
-        { id: 5, title: 'Confirm the server is', start: '2025-09-24T06:00', end: '2025-09-24T09:00', resourceId: 'jw-24', status: 'in_progress', backgroundColor: '#ffd700' },
-        { id: 6, title: 'Leading pa. Call w/ D.', start: '2025-09-25T06:30', end: '2025-09-25T09:00', resourceId: 'ps-25', status: 'completed', backgroundColor: '#98fb98' },
-        { id: 7, title: 'Review Operations IT Reviews', start: '2025-09-25T08:00', end: '2025-09-25T10:00', resourceId: 'br-25', status: 'pending', backgroundColor: '#87cefa' },
-        { id: 8, title: 'Install I Build', start: '2025-09-26T06:00', end: '2025-09-26T09:30', resourceId: 'ps-26', status: 'in_progress', backgroundColor: '#ffb6c1' }
-      @endforelse
-    ];
+    <!-- Loading Spinner -->
+    <div class="loading-spinner">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Đang tải...</span>
+        </div>
+    </div>
 
-    // Khởi tạo lịch
-    document.addEventListener('DOMContentLoaded', function () {
-      const calendarEl = document.getElementById('calendar');
-      const calendar = EventCalendar.create(calendarEl, {
-        initialView: 'resourceTimeGridWeek',
-        views: {
-          resourceTimeGridWeek: { type: 'resourceTimeGridWeek' },
-          resourceTimeGridDay: { type: 'resourceTimeGridDay' }
-        },
-        headerToolbar: {
-          left: 'prev,next today',
-          center: 'title',
-          right: 'resourceTimeGridWeek,resourceTimeGridDay'
-        },
-        editable: false,
-        locale: 'vi',
-        resources: resources,
-        resourceGroupField: 'dayGroup',
-        resourceGroupText: function(groupValue) {
-          const date = new Date(groupValue);
-          const weekday = date.toLocaleDateString('vi-VN', { weekday: 'long' });
-          const day = date.getDate();
-          return `${weekday} ${day}`;
-        },
-        slotMinTime: '05:30:00',
-        slotMaxTime: '18:00:00',
-        events: tasks.map(task => ({
-          id: task.id,
-          title: task.title,
-          start: task.start,
-          end: task.end,
-          resourceId: task.resourceId || task.assigned_to,
-          backgroundColor: task.backgroundColor || (task.status === 'completed' ? '#27ae60' :
-                          task.status === 'in_progress' ? '#e67e22' :
-                          task.status === 'overdue' ? '#c0392b' : '#6c757d'),
-          borderColor: task.backgroundColor || (task.status === 'completed' ? '#27ae60' :
-                       task.status === 'in_progress' ? '#e67e22' :
-                       task.status === 'overdue' ? '#c0392b' : '#6c757d'),
-          extendedProps: { // Lưu thông tin bổ sung để hiển thị trong tooltip hoặc modal
-            status: task.status,
-            progress: task.progress,
-            user_name: task.user_name
-          }
-        })),
-        eventClick: function(info) {
-          const task = tasks.find(t => t.id == info.event.id);
-          const modal = new bootstrap.Modal(document.getElementById('editTaskModal'));
-          const form = document.getElementById('editTaskForm');
-          const deleteForm = document.querySelector('#editTaskModal form[action*="/tasks/destroy"]');
-          form.action = form.action.replace(':id', task.id);
-          deleteForm.action = deleteForm.action.replace(':id', task.id);
-          form.querySelector('input[name="id"]').value = task.id;
-          form.querySelector('input[name="title"]').value = task.title;
-          form.querySelector('select[name="status"]').value = task.status;
-          form.querySelector('input[name="start"]').value = task.start.replace(' ', 'T');
-          form.querySelector('input[name="end"]').value = task.end.replace(' ', 'T');
-          form.querySelector('input[name="deadline"]').value = task.deadline || task.start.split('T')[0];
-          form.querySelector('input[name="progress"]').value = task.progress;
-          form.querySelector('select[name="assigned_to"]').value = task.assigned_to;
-          modal.show();
-        },
-        // Thêm tooltip khi hover vào sự kiện
-        eventDidMount: function(info) {
-          const task = info.event.extendedProps;
-          const statusText = task.status === 'completed' ? 'Hoàn thành' :
-                            task.status === 'in_progress' ? 'Đang làm' :
-                            task.status === 'overdue' ? 'Quá hạn' : 'Chờ xử lý';
-          info.el.setAttribute('title', 
-            `Người thực hiện: ${task.user_name}\n` +
-            `Trạng thái: ${statusText}\n` +
-            `Tiến độ: ${task.progress}%`
-          );
-        }
-      });
+    <!-- JavaScript -->
+    <script>
+        // Kiểm tra form thêm công việc
+        document.getElementById('taskForm').addEventListener('submit', function (e) {
+            const title = document.querySelector('input[name="title"]').value.trim();
+            const progress = document.querySelector('input[name="progress"]')?.value;
+            const titleError = document.getElementById('title-error');
+            const progressError = document.getElementById('progress-error');
+            let hasError = false;
 
-      // Kiểm tra form chỉnh sửa
-      document.getElementById('editTaskForm').addEventListener('submit', function(e) {
-        const title = this.querySelector('input[name="title"]').value;
-        const start = this.querySelector('input[name="start"]').value;
-        const end = this.querySelector('input[name="end"]').value;
-        const deadline = this.querySelector('input[name="deadline"]').value;
-        const progress = this.querySelector('input[name="progress"]').value || 0;
-        const assignedTo = this.querySelector('select[name="assigned_to"]').value;
-        const titleError = document.getElementById('edit-title-error');
-        const deadlineError = document.getElementById('edit-deadline-error');
-        const progressError = document.getElementById('edit-progress-error');
-        const assignedToError = document.getElementById('edit-assigned-to-error');
-        let hasError = false;
+            titleError.style.display = 'none';
+            if (progressError) progressError.style.display = 'none';
 
-        titleError.style.display = 'none';
-        deadlineError.style.display = 'none';
-        progressError.style.display = 'none';
-        assignedToError.style.display = 'none';
+            if (!title) {
+                titleError.style.display = 'block';
+                hasError = true;
+            }
 
-        if (!title.trim()) {
-          titleError.style.display = 'block';
-          hasError = true;
-        }
-        if (!deadline) {
-          deadlineError.style.display = 'block';
-          hasError = true;
-        }
-        if (progress && (progress < 0 || progress > 100)) {
-          progressError.style.display = 'block';
-          hasError = true;
-        }
-        if (!assignedTo) {
-          assignedToError.style.display = 'block';
-          hasError = true;
+            if (progress && (progress < 0 || progress > 100)) {
+                progressError.style.display = 'block';
+                hasError = true;
+            }
+
+            if (hasError) {
+                e.preventDefault();
+            } else {
+                document.querySelector('.loading-spinner').style.display = 'block';
+            }
+        });
+
+        // Kiểm tra form chỉnh sửa công việc
+        document.querySelectorAll('form[action*="/tasks/"]').forEach(form => {
+            form.addEventListener('submit', function (e) {
+                const title = form.querySelector('input[name="title"]').value.trim();
+                const progress = form.querySelector('input[name="progress"]')?.value;
+                const titleError = form.querySelector('[id^="edit-title-error"]');
+                const progressError = form.querySelector('[id^="edit-progress-error"]');
+                let hasError = false;
+
+                titleError.style.display = 'none';
+                if (progressError) progressError.style.display = 'none';
+
+                if (!title) {
+                    titleError.style.display = 'block';
+                    hasError = true;
+                }
+
+                if (progress && (progress < 0 || progress > 100)) {
+                    progressError.style.display = 'block';
+                    hasError = true;
+                }
+
+                if (hasError) {
+                    e.preventDefault();
+                } else {
+                    document.querySelector('.loading-spinner').style.display = 'block';
+                }
+            });
+        });
+
+        // Hàm lọc bảng chung
+        function filterTable(tableId) {
+            const searchText = document.getElementById('searchInput').value.toLowerCase().trim();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const roleFilter = document.getElementById('roleFilter').value;
+            const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+
+            rows.forEach(row => {
+                const employee = row.cells[1].textContent.toLowerCase();
+                const task = row.cells[2].textContent.toLowerCase();
+                const role = row.cells[3].querySelector('.badge')?.textContent.toLowerCase() || '';
+                const status = row.cells[7].querySelector('.badge')?.textContent.toLowerCase() || '';
+                const participants = row.cells[8].textContent.toLowerCase();
+
+                const matchesSearch = !searchText || employee.includes(searchText) || task.includes(searchText) || participants.includes(searchText);
+                const matchesStatus = !statusFilter || status.includes(statusFilter);
+                const matchesRole = !roleFilter || role.includes(roleFilter);
+
+                row.style.display = matchesSearch && matchesStatus && matchesRole ? '' : 'none';
+            });
         }
 
-        if (hasError) {
-          e.preventDefault();
-        }
-      });
-    });
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        // Gắn sự kiện lọc cho cả ba bảng
+        ['input', 'change'].forEach(event => {
+            document.getElementById('searchInput').addEventListener(event, () => {
+                filterTable('taskTable');
+                if (document.getElementById('joinedTaskTable')) filterTable('joinedTaskTable');
+                if (document.getElementById('colleagueTaskTable')) filterTable('colleagueTaskTable');
+            });
+            document.getElementById('statusFilter').addEventListener(event, () => {
+                filterTable('taskTable');
+                if (document.getElementById('joinedTaskTable')) filterTable('joinedTaskTable');
+                if (document.getElementById('colleagueTaskTable')) filterTable('colleagueTaskTable');
+            });
+            document.getElementById('roleFilter').addEventListener(event, () => {
+                filterTable('taskTable');
+                if (document.getElementById('joinedTaskTable')) filterTable('joinedTaskTable');
+                if (document.getElementById('colleagueTaskTable')) filterTable('colleagueTaskTable');
+            });
+        });
+
+        // Xử lý modal tham gia công việc
+        document.querySelectorAll('.join-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const taskId = this.getAttribute('data-task-id');
+                document.getElementById('joinTaskId').value = taskId;
+                const modal = new bootstrap.Modal(document.getElementById('joinTaskModal'));
+                modal.show();
+            });
+        });
+
+        // Kiểm tra form tham gia công việc
+        document.getElementById('joinTaskForm').addEventListener('submit', function (e) {
+            const role = document.getElementById('joinRole').value;
+            const info = document.getElementById('joinInfo').value.trim();
+            const roleError = document.getElementById('joinRole-error');
+            const infoError = document.getElementById('joinInfo-error');
+            let hasError = false;
+
+            roleError.style.display = 'none';
+            infoError.style.display = 'none';
+
+            if (!role) {
+                roleError.style.display = 'block';
+                hasError = true;
+            }
+
+            if (!info) {
+                infoError.style.display = 'block';
+                hasError = true;
+            }
+
+            if (hasError) {
+                e.preventDefault();
+            } else {
+                document.querySelector('.loading-spinner').style.display = 'block';
+            }
+        });
+
+        // Ẩn spinner khi tải xong
+        window.addEventListener('load', () => {
+            document.querySelector('.loading-spinner').style.display = 'none';
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
