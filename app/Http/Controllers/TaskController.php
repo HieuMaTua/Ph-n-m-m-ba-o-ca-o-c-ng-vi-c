@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
+use App\Models\User;
 
 class TaskController extends Controller
 {
@@ -62,7 +63,7 @@ class TaskController extends Controller
             ]);
         }
 
-        return view('tasks.index', [
+        return view('tasks.calendar', [
             'tasks' => $tasks,
             'tasksToday' => $query->whereDate('deadline', now())->count(),
             'completed' => $query->where('status', 'completed')->count(),
@@ -133,12 +134,12 @@ class TaskController extends Controller
             }
         }
 
-        return redirect()->route('tasks.index')->with('success', 'Thêm công việc thành công!');
+        return redirect()->route('tasks.calendar')->with('success', 'Thêm công việc thành công!');
     }
 
     public function update(Request $request, Task $task)
     {
-        if (Auth::user()->role != 'director' && $task->assigned_to != Auth::id() && $task->user_id != Auth::id()) {
+        if (Auth::user()->role != 'director' && $task->assigned_to != Auth::id() && $task->user_id != Auth::id() && !(Auth::user()->role == 'manager' && $task->user && $task->user->manager_id == Auth::id())) {
             return redirect()->back()->with('error', 'Bạn không có quyền sửa công việc này.');
         }
 
@@ -153,25 +154,27 @@ class TaskController extends Controller
             'notes.*' => 'nullable|string|max:500',
         ]);
 
-        if (Auth::user()->role != 'director' && $task->assigned_to != Auth::id()) {
+        if (Auth::user()->role != 'director' && $task->assigned_to != Auth::id() && 
+        !(Auth::user()->role == 'manager' && $task->user && $task->user->manager_id == Auth::id())) {
             $validated['status'] = $task->status;
         }
 
-        if (Auth::user()->role == 'director' || $task->assigned_to == Auth::id()) {
+        if (Auth::user()->role == 'director' || $task->assigned_to == Auth::id() && 
+        !(Auth::user()->role == 'manager' && $task->user && $task->user->manager_id == Auth::id())) {
             $validated['progress'] = $request->input('progress', $task->progress);
         } else {
             $validated['progress'] = $task->progress;
         }
 
-        if ($validated['deadline']) {
-            $validated['deadline'] = Carbon::parse($validated['deadline']);
-        }
-        if ($validated['start']) {
+        if (!empty($validated['start'])) {
             $validated['start'] = Carbon::parse($validated['start']);
         }
-        if ($validated['end']) {
+        if (!empty($validated['end'])) {
             $validated['end'] = Carbon::parse($validated['end']);
         }
+        if (!empty($validated['deadline'])) {
+            $validated['deadline'] = Carbon::parse($validated['deadline']);
+        }        
 
         $task->update($validated);
 
@@ -211,4 +214,59 @@ class TaskController extends Controller
         $file->delete();
         return redirect()->back()->with('success', 'Xóa file thành công!');
     }
+
+    public function assignStore(Request $request)
+{
+    $validated = $request->validate([
+        'user_id' => 'required|exists:users,id',
+        'title' => 'required|string|max:255',
+        'deadline' => 'nullable|date',
+    ]);
+
+    $employee = User::findOrFail($validated['user_id']);
+
+    if (! $this->authUserCanManageEmployee($employee)) {
+        return response()->json(['success' => false, 'message' => 'Bạn không có quyền giao việc cho nhân viên này!'], 403);
+    }
+
+    $task = Task::create([
+        'title' => $validated['title'],
+        'user_id' => $validated['user_id'],
+        'assigned_by' => Auth::id(), // Giữ nếu dùng cột này
+        'deadline' => $validated['deadline'],
+        'status' => 'pending',
+        'progress' => 0,
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Giao việc thành công!',
+        'task' => $task
+    ]);
+}
+
+public function getEmployeeTasks($employeeId)
+{
+    $employee = User::findOrFail($employeeId);
+
+    if (! $this->authUserCanManageEmployee($employee)) {
+        abort(403, 'Unauthorized');
+    }
+
+    $tasks = Task::where('user_id', $employeeId)
+        ->orderBy('created_at', 'desc')
+        ->get(['id', 'title', 'deadline', 'status', 'created_at']); // Loại bỏ priority
+
+    return response()->json($tasks);
+}
+
+// Trong assignStore và getEmployeeTasks
+private function authUserCanManageEmployee($employee)
+{
+    $authUser = Auth::user();
+    if ($authUser->role === 'director') {
+        return true; // Bypass cho director
+    }
+    return $employee->manager_id === $authUser->id;
+}
 }

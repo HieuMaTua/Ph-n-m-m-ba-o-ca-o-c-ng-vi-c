@@ -32,6 +32,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/tasks/calendar', [TaskController::class, 'index'])->name('tasks.calendar');
     Route::resource('tasks', TaskController::class);
     Route::delete('/tasks/files/{file}', [TaskController::class, 'destroyFile'])->name('tasks.destroyFile'); // Thêm route này
+    Route::post('/tasks/assign', [App\Http\Controllers\TaskController::class, 'assignStore'])->name('tasks.assign.store');
+    Route::get('/tasks/employee/{id}', [App\Http\Controllers\TaskController::class, 'getEMPLOYEEtasks'])->name('tasks.employee.tasks');
 
     Route::resource('task_requests', TaskRequestController::class)->only(['index', 'store']);
     Route::post('task_requests/{id}/approve', [TaskRequestController::class, 'approve'])->name('task_requests.approve');

@@ -11,12 +11,31 @@ class TaskRequestController extends Controller
 {
     public function index()
     {
-        $taskRequests = TaskRequest::where('approver_id', Auth::id())
-            ->with(['user', 'task', 'approver'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $userId = Auth::id();
 
-        return view('task_requests.index', compact('taskRequests'));
+        // Kiểm tra nếu có pending requests cần duyệt (giữ nguyên logic gốc cho approver)
+        $pendingForApprove = TaskRequest::where('approver_id', $userId)
+            ->where('status', 'pending')
+            ->exists();
+
+        if ($pendingForApprove) {
+            // Mode approver: Giữ nguyên như code gốc, nhưng thêm where status pending để explicit
+            $taskRequests = TaskRequest::where('approver_id', $userId)
+                ->where('status', 'pending')
+                ->with(['user', 'task', 'approver'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+            $viewMode = 'approve'; // Mode xử lý
+        } else {
+            // Mode requester: Fetch tất cả requests của user để theo dõi (thêm phần này)
+            $taskRequests = TaskRequest::where('user_id', $userId)
+                ->with(['user', 'task', 'approver'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+            $viewMode = 'track'; // Mode theo dõi
+        }
+
+        return view('task_requests.index', compact('taskRequests', 'viewMode'));
     }
 
     public function store(Request $request)

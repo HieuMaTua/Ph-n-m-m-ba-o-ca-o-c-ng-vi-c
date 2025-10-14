@@ -26,7 +26,7 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $request->validate([
-            'role' => 'required|in:staff,manager,admin',
+            'role' => 'required|in:staff,manager,director',
             'manager_id' => 'nullable|exists:users,id',
         ]);
 

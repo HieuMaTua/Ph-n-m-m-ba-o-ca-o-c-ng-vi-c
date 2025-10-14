@@ -55,6 +55,11 @@ class User extends Authenticatable
         ];
     }
 
+    public function assignedTasks()
+    {
+        return $this->hasMany(Task::class, 'user_id'); // Giả sử model Task là App\Models\Task
+    }
+
     // Một nhân viên chỉ có một quản lý
     public function manager()
     {

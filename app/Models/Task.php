@@ -22,6 +22,7 @@ class Task extends Model
         'file_path',
         'priority',
         'participants',
+        'assigned_by'
     ];
 
     protected $casts = [
@@ -32,6 +33,7 @@ class Task extends Model
         'updated_at' => 'datetime',
         'participants' => 'array',
     ];
+    
 
     public function user()
     {

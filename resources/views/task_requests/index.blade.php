@@ -47,15 +47,15 @@
             </div>
         @endif
 
-        <h1>Xử Lý Yêu Cầu Tham Gia Công Việc</h1>
+        <h1>@if($viewMode == 'approve') Xử Lý Yêu Cầu Tham Gia Công Việc @else Theo Dõi Yêu Cầu Tham Gia Của Tôi @endif</h1>
 
         <div class="search-filter mb-4">
             <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm yêu cầu..." aria-label="Tìm kiếm yêu cầu" style="width: 300px; display: inline-block; margin-right: 10px;">
             <select id="statusFilter" class="form-control" aria-label="Lọc theo trạng thái" style="width: 200px; display: inline-block; margin-right: 10px;">
                 <option value="">Tất cả trạng thái</option>
-                <option value="pending">Chờ duyệt</option>
-                <option value="approved">Đã duyệt</option>
-                <option value="rejected">Đã từ chối</option>
+                <option value="đang xử lý">Đang xử lý</option>
+                <option value="đã duyệt">Đã duyệt</option>
+                <option value="đã từ chối">Đã từ chối</option>
             </select>
             <select id="roleFilter" class="form-control" aria-label="Lọc theo vai trò" style="width: 200px; display: inline-block;">
                 <option value="">Tất cả vai trò</option>
@@ -99,7 +99,7 @@
                             <td>
                                 @switch($request->status)
                                     @case('pending')
-                                        <span class="badge bg-warning">Chờ duyệt</span>
+                                        <span class="badge bg-warning">Đang xử lý</span>
                                         @break
                                     @case('approved')
                                         <span class="badge bg-success">Đã duyệt</span>
@@ -127,7 +127,7 @@
                         </tr>
                     @endforeach
                     @if($taskRequests->isEmpty())
-                        <tr><td colspan="9" class="text-center">Chưa có yêu cầu tham gia công việc cần xử lý.</td></tr>
+                        <tr><td colspan="9" class="text-center">@if($viewMode == 'approve') Chưa có yêu cầu tham gia công việc cần xử lý. @else Chưa có yêu cầu tham gia công việc của bạn. @endif</td></tr>
                     @endif
                 </tbody>
             </table>
@@ -149,7 +149,7 @@
     <script>
         function filterRequestTable() {
             const searchText = document.getElementById('searchInput').value.toLowerCase().trim();
-            const statusFilter = document.getElementById('statusFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
             const roleFilter = document.getElementById('roleFilter').value;
             const rows = document.querySelectorAll('#taskRequestTable tbody tr');
 

@@ -74,7 +74,7 @@
                 <input type="date" name="deadline" class="form-control" aria-label="Hạn chót">
             </div>
             <div class="col-md-3">
-                @if(Auth::user()->role == 'staff')
+                @if(Auth::user()->role == 'staff' || Auth::user()->role == 'manager' || Auth::user()->role == 'director')
                     <div class="progress" style="height: 38px;">
                         <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
                     </div>
@@ -112,7 +112,11 @@
                 </thead>
                 <tbody>
                     @foreach($tasks as $task)
-                        @if(Auth::user()->role == 'director' || $task->user_id == Auth::user()->id)
+                    @if(
+                        $task->user_id == Auth::user()->id ||
+                        ($task->user && $task->user->manager_id == Auth::user()->id)
+                    )
+                    
                             @include('tasks.row', ['task' => $task, 'isOwnTask' => true])
                         @endif
                     @endforeach
@@ -127,98 +131,206 @@
             <div class="mt-3">{{ $tasks->links() }}</div>
         @endif
 
-        @if(Auth::user()->role == 'staff')
-            <h2 class="mt-5">Công việc của đồng nghiệp đã tham gia</h2>
-            <div class="task-table-section">
-                <table class="table table-bordered table-hover" id="joinedTaskTable">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>ID</th>
-                            <th>Nhân viên</th>
-                            <th>Tên công việc</th>
-                            <th>Chức vụ</th>
-                            <th>Thuộc quản lý</th>
-                            <th>Hạn chót</th>
-                            <th>Ngày tạo</th>
-                            <th>Trạng thái</th>
-                            <th>Người tham gia</th>
-                            <th>Hành động</th>
-                            <th>Tiến độ</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($tasks as $task)
-                            @php
-                                $isParticipant = false;
-                                if ($task->participants) {
-                                    foreach ($task->participants as $participant) {
-                                        if ($participant['user_id'] == Auth::user()->id) {
-                                            $isParticipant = true;
-                                            break;
-                                        }
+        <h2 class="mt-5">Công việc của đồng nghiệp đã tham gia</h2>
+        <div class="task-table-section">
+            <table class="table table-bordered table-hover" id="joinedTaskTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nhân viên</th>
+                        <th>Tên công việc</th>
+                        <th>Chức vụ</th>
+                        <th>Thuộc quản lý</th>
+                        <th>Hạn chót</th>
+                        <th>Ngày tạo</th>
+                        <th>Trạng thái</th>
+                        <th>Người tham gia</th>
+                        <th>Hành động</th>
+                        <th>Tiến độ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($tasks as $task)
+                        @php
+                            $isParticipant = false;
+                            if ($task->participants) {
+                                foreach ($task->participants as $participant) {
+                                    if ($participant['user_id'] == Auth::user()->id) {
+                                        $isParticipant = true;
+                                        break;
                                     }
                                 }
-                            @endphp
-                            @if($task->user_id != Auth::user()->id && $isParticipant)
-                                @include('tasks.row', ['task' => $task, 'isOwnTask' => false])
-                            @endif
-                        @endforeach
-                        @if($tasks->where('user_id', '!=', Auth::user()->id)->filter(function($task) {
-                            return collect($task->participants)->contains('user_id', Auth::user()->id);
-                        })->isEmpty())
-                            <tr><td colspan="11" class="text-center">Chưa tham gia công việc nào của đồng nghiệp.</td></tr>
+                            }
+                        @endphp
+                        @if($task->user_id != Auth::user()->id && $isParticipant)
+                            @include('tasks.row', ['task' => $task, 'isOwnTask' => false])
                         @endif
-                    </tbody>
-                </table>
-            </div>
+                    @endforeach
+                    @if($tasks->where('user_id', '!=', Auth::user()->id)->filter(function($task) {
+                        return collect($task->participants)->contains('user_id', Auth::user()->id);
+                    })->isEmpty())
+                        <tr><td colspan="11" class="text-center">Chưa tham gia công việc nào của đồng nghiệp.</td></tr>
+                    @endif
+                </tbody>
+            </table>
+        </div>
 
-            <h2 class="mt-5">Công việc của đồng nghiệp (có thể tham gia)</h2>
-            <div class="task-table-section">
-                <table class="table table-bordered table-hover" id="colleagueTaskTable">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>ID</th>
-                            <th>Nhân viên</th>
-                            <th>Tên công việc</th>
-                            <th>Chức vụ</th>
-                            <th>Thuộc quản lý</th>
-                            <th>Hạn chót</th>
-                            <th>Ngày tạo</th>
-                            <th>Trạng thái</th>
-                            <th>Người tham gia</th>
-                            <th>Hành động</th>
-                            <th>Tiến độ</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($tasks as $task)
-                            @php
-                                $isParticipant = false;
-                                if ($task->participants) {
-                                    foreach ($task->participants as $participant) {
-                                        if ($participant['user_id'] == Auth::user()->id) {
-                                            $isParticipant = true;
-                                            break;
-                                        }
+        <h2 class="mt-5">Công việc của đồng nghiệp (có thể tham gia)</h2>
+        <div class="task-table-section">
+            <table class="table table-bordered table-hover" id="colleagueTaskTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nhân viên</th>
+                        <th>Tên công việc</th>
+                        <th>Chức vụ</th>
+                        <th>Thuộc quản lý</th>
+                        <th>Hạn chót</th>
+                        <th>Ngày tạo</th>
+                        <th>Trạng thái</th>
+                        <th>Người tham gia</th>
+                        <th>Hành động</th>
+                        <th>Tiến độ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($tasks as $task)
+                        @php
+                            $isParticipant = false;
+                            if ($task->participants) {
+                                foreach ($task->participants as $participant) {
+                                    if ($participant['user_id'] == Auth::user()->id) {
+                                        $isParticipant = true;
+                                        break;
                                     }
                                 }
-                            @endphp
-                            @if($task->user_id != Auth::user()->id && !$isParticipant)
-                                @include('tasks.row', ['task' => $task, 'isOwnTask' => false])
-                            @endif
-                        @endforeach
-                        @if($tasks->where('user_id', '!=', Auth::user()->id)->filter(function($task) {
-                            return !collect($task->participants)->contains('user_id', Auth::user()->id);
-                        })->isEmpty())
-                            <tr><td colspan="11" class="text-center">Chưa có công việc của đồng nghiệp để tham gia.</td></tr>
+                            }
+                        @endphp
+                        @if($task->user_id != Auth::user()->id && !$isParticipant)
+                            @include('tasks.row', ['task' => $task, 'isOwnTask' => false])
                         @endif
-                    </tbody>
-                </table>
-            </div>
+                    @endforeach
+                    @if($tasks->where('user_id', '!=', Auth::user()->id)->filter(function($task) {
+                        return !collect($task->participants)->contains('user_id', Auth::user()->id);
+                    })->isEmpty())
+                        <tr><td colspan="11" class="text-center">Chưa có công việc của đồng nghiệp để tham gia.</td></tr>
+                    @endif
+                </tbody>
+            </table>
+        </div>
 
-            @if($tasks instanceof \Illuminate\Pagination\LengthAwarePaginator)
-                <div class="mt-3">{{ $tasks->links() }}</div>
-            @endif
+        @if($tasks instanceof \Illuminate\Pagination\LengthAwarePaginator)
+            <div class="mt-3">{{ $tasks->links() }}</div>
+        @endif
+
+        <!-- Bảng Quản Lý Giao Việc - Hiển thị dựa trên manager_id hoặc Director -->
+        @if(Auth::user()->role == 'director' || App\Models\User::where('manager_id', Auth::id())->exists())
+            <div class="mt-5">
+                <h2><i class="bi bi-person-check"></i> Quản Lý Giao Việc Cho Nhân Viên</h2>
+                
+                <!-- Form Giao Việc Nhanh -->
+                <div class="row g-3 mb-4 bg-light p-3 rounded">
+                    <div class="col-md-4">
+                        <select name="assign_employee" id="assignEmployee" class="form-control" required>
+                            <option value="">Chọn nhân viên</option>
+                            @php
+                                $query = App\Models\User::query();
+if (Auth::user()->role === 'director') {
+    $query->whereIn('role', ['staff', 'manager']);
+} else {
+    $query->where('role', 'staff')->where('manager_id', Auth::id());
+}
+                                $employees = $query->get();
+                            @endphp
+                            @foreach($employees as $employee)
+                                <option value="{{ $employee->id }}" data-name="{{ $employee->name }}">
+                                    {{ $employee->name }} ({{ $employee->email }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" id="assignTitle" class="form-control" placeholder="Tên công việc" required>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="date" id="assignDeadline" class="form-control">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" id="quickAssignBtn" class="btn btn-success w-100">
+                            <i class="bi bi-arrow-right-circle"></i> Giao Việc
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bảng Nhân Viên và Công Việc Được Giao -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4>Danh sách nhân viên</h4>
+                        <div class="table-responsive">
+                            <table class="table table-striped" id="employeeTable">
+                                <thead class="table-info">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Tên nhân viên</th>
+                                        <th>Email</th>
+                                        <th>Số việc đang chờ</th>
+                                        <th>Tổng việc</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $query = App\Models\User::query();
+if (Auth::user()->role === 'director') {
+    $query->whereIn('role', ['staff', 'manager']);
+} else {
+    $query->where('role', 'staff')->where('manager_id', Auth::id());
+}
+                                        $employees = $query
+                                            ->withCount([
+                                                'assignedTasks as pending_tasks_count' => function($q) {
+                                                    $q->where('status', 'pending');
+                                                },
+                                                'assignedTasks as assigned_tasks_count'
+                                            ])
+                                            ->get();
+                                    @endphp
+                                    @foreach($employees as $employee)
+                                        <tr data-employee-id="{{ $employee->id }}">
+                                            <td>{{ $employee->id }}</td>
+                                            <td>{{ $employee->name }}</td>
+                                            <td>{{ $employee->email }}</td>
+                                            <td>
+                                                <span class="badge bg-warning">{{ $employee->pending_tasks_count }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary">{{ $employee->assigned_tasks_count }}</span>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-primary view-tasks-btn" data-employee-id="{{ $employee->id }}">
+                                                    <i class="bi bi-eye"></i> Xem việc
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                    @if($employees->isEmpty())
+                                        <tr><td colspan="6" class="text-center">Chưa có nhân viên để quản lý.</td></tr>
+                                    @endif
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h4>Công việc của <span id="selectedEmployeeName">-</span></h4>
+                        <div id="employeeTasksContainer">
+                            <div class="alert alert-info">
+                                Chọn nhân viên để xem danh sách công việc được giao.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         @endif
     </div>
 
@@ -251,6 +363,42 @@
                         </div>
                         <button type="submit" class="btn btn-primary">Gửi Yêu Cầu</button>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Xem Công Việc Nhân Viên -->
+    <div class="modal fade" id="employeeTasksModal" tabindex="-1" aria-labelledby="employeeTasksModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="employeeTasksModalLabel">
+                        Công việc của <span id="modalEmployeeName"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="modalTasksTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tên công việc</th>
+                                    <th>Hạn chót</th>
+                                    <th>Trạng thái</th>
+                                    <th>Ngày giao</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modalTasksBody">
+                                <!-- Load by AJAX -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                 </div>
             </div>
         </div>
@@ -401,6 +549,158 @@
                 document.querySelector('.loading-spinner').style.display = 'block';
             }
         });
+
+        // ========== QUẢN LÝ GIAO VIỆC ==========
+        if (document.getElementById('assignEmployee')) {
+            // Giao việc nhanh
+            document.getElementById('quickAssignBtn').addEventListener('click', function() {
+                const employeeId = document.getElementById('assignEmployee').value;
+                const title = document.getElementById('assignTitle').value.trim();
+                const deadline = document.getElementById('assignDeadline').value;
+
+                if (!employeeId || !title) {
+                    alert('Vui lòng chọn nhân viên và nhập tên công việc!');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('_token', '{{ csrf_token() }}');
+                formData.append('user_id', employeeId);
+                formData.append('title', title);
+                formData.append('deadline', deadline || null);
+                formData.append('status', 'pending');
+
+                document.querySelector('.loading-spinner').style.display = 'block';
+
+                fetch('{{ route("tasks.assign.store") }}', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Giao việc thành công!');
+                        // Reset form
+                        document.getElementById('assignTitle').value = '';
+                        document.getElementById('assignDeadline').value = '';
+                        // Refresh trang để update count
+                        location.reload();
+                    } else {
+                        alert('Lỗi: ' + (data.message || 'Không thể giao việc'));
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert('Lỗi kết nối server!');
+                })
+                .finally(() => {
+                    document.querySelector('.loading-spinner').style.display = 'none';
+                });
+            });
+
+            // Xem công việc nhân viên (bên phải)
+            document.querySelectorAll('.view-tasks-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const employeeId = this.dataset.employeeId;
+                    const employeeName = this.closest('tr').querySelector('td:nth-child(2)').textContent;
+                    
+                    document.getElementById('selectedEmployeeName').textContent = employeeName;
+                    loadEmployeeTasks(employeeId);
+                });
+            });
+
+            // Load công việc cho container bên phải
+            function loadEmployeeTasks(employeeId) {
+                fetch(`/tasks/employee/${employeeId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const container = document.getElementById('employeeTasksContainer');
+                        let html = '<div class="table-responsive"><table class="table table-striped"><thead class="table-warning"><tr><th>ID</th><th>Tên công việc</th><th>Hạn chót</th><th>Trạng thái</th><th>Ngày giao</th></tr></thead><tbody>';
+                        
+                        if (data.length === 0) {
+                            html += '<tr><td colspan="5" class="text-center">Chưa có công việc nào</td></tr>';
+                        } else {
+                            data.forEach(task => {
+                                const statusBadge = getStatusBadge(task.status);
+                                html += `
+                                    <tr>
+                                        <td>${task.id}</td>
+                                        <td>${task.title}</td>
+                                        <td>${task.deadline ? new Date(task.deadline).toLocaleDateString('vi-VN') : 'N/A'}</td>
+                                        <td>${statusBadge}</td>
+                                        <td>${new Date(task.created_at).toLocaleDateString('vi-VN')}</td>
+                                    </tr>
+                                `;
+                            });
+                        }
+                        
+                        html += '</tbody></table></div>';
+                        container.innerHTML = html;
+                    })
+                    .catch(() => {
+                        container.innerHTML = '<div class="alert alert-danger">Lỗi tải dữ liệu</div>';
+                    });
+            }
+
+            // Mở modal xem chi tiết
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.classList.contains('view-tasks-btn')) {
+                    const employeeId = e.target.dataset.employeeId;
+                    const employeeName = e.target.closest('tr').querySelector('td:nth-child(2)').textContent;
+                    
+                    document.getElementById('modalEmployeeName').textContent = employeeName;
+                    loadModalTasks(employeeId);
+                    
+                    const modal = new bootstrap.Modal(document.getElementById('employeeTasksModal'));
+                    modal.show();
+                }
+            });
+
+            // Load cho modal
+            function loadModalTasks(employeeId) {
+                fetch(`/tasks/employee/${employeeId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const tbody = document.getElementById('modalTasksBody');
+                        tbody.innerHTML = '';
+                        
+                        if (data.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="6" class="text-center">Chưa có công việc nào</td></tr>';
+                            return;
+                        }
+                        
+                        data.forEach(task => {
+                            const statusBadge = getStatusBadge(task.status);
+                            tbody.innerHTML += `
+                                <tr>
+                                    <td>${task.id}</td>
+                                    <td>${task.title}</td>
+                                    <td>${task.deadline ? new Date(task.deadline).toLocaleDateString('vi-VN') : 'N/A'}</td>
+                                    <td>${statusBadge}</td>
+                                    <td>${new Date(task.created_at).toLocaleDateString('vi-VN')}</td>
+                                    <td>
+                                        <a href="/tasks/${task.id}" class="btn btn-sm btn-primary">Chi tiết</a>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                    })
+                    .catch(() => {
+                        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Lỗi tải dữ liệu</td></tr>';
+                    });
+            }
+
+            // Helper badge status
+            function getStatusBadge(status) {
+                const badges = {
+                    'pending': '<span class="badge bg-warning">Chờ xử lý</span>',
+                    'in_progress': '<span class="badge bg-info">Đang làm</span>',
+                    'completed': '<span class="badge bg-success">Hoàn thành</span>',
+                    'overdue': '<span class="badge bg-danger">Quá hạn</span>'
+                };
+                return badges[status] || '<span class="badge bg-secondary">N/A</span>';
+            }
+        }
 
         // Ẩn spinner khi tải xong
         window.addEventListener('load', () => {

@@ -105,7 +105,7 @@
                     <div class="mb-3">
                         <label class="form-label">Upload file (nếu thay đổi)</label>
                         <input type="file" name="files[]" class="form-control" accept=".pdf,.doc,.docx,.jpg,.png" multiple>
-                        @if($task->files->count() > 0)
+                        {{-- @if($task->files->count() > 0)
                             <small>File hiện tại:</small>
                             @foreach($task->files as $file)
                                 <div>
@@ -117,7 +117,7 @@
                                     </form>
                                 </div>
                             @endforeach
-                        @endif
+                        @endif --}}
                     </div>
                 </div>
                 <div class="modal-footer">
