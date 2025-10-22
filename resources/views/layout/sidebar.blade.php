@@ -25,7 +25,7 @@
             <i class="bi bi-people"></i> Nhân sự
         </a>
 
-        <a href="#" class="{{ request()->routeIs('settings.*') ? 'active' : '' }}">
+        <a href="{{ route('settings.index') }}" class="{{ request()->routeIs('settings.*') ? 'active' : '' }}">
             <i class="bi bi-gear"></i> Cài đặt
         </a>
     </div>

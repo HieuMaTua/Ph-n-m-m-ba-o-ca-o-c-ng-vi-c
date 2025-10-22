@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NhansuController;
 use App\Http\Controllers\TaskFileController;
 use App\Http\Controllers\TaskRequestController;
+use App\Http\Controllers\SettingsController;
 
 // Auth routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -49,6 +50,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/nhansu', [NhansuController::class, 'store'])->name('nhansu.store');
     Route::put('/nhansu/{user}', [NhansuController::class, 'update'])->name('nhansu.update');
     Route::delete('/nhansu/{user}', [NhansuController::class, 'destroy'])->name('nhansu.destroy');
+
+    Route::prefix('settings')->group(function () {
+        Route::get('/', [SettingsController::class, 'index'])->name('settings.index');
+        Route::put('/personal', [SettingsController::class, 'updatePersonal'])->name('settings.personal.update');
+        Route::put('/roles/{user}', [SettingsController::class, 'updateRoles'])->name('settings.roles.update');
+        Route::put('/system', [SettingsController::class, 'updateSystem'])->name('settings.system.update');
+    });
 
     // API routes cho dashboard
     Route::get('/api/tasks', [DashboardController::class, 'apiStats'])->name('api.tasks.stats');
