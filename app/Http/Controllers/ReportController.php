@@ -52,11 +52,12 @@ class ReportController extends Controller
     }
 
     /**
-     * API dữ liệu báo cáo theo kỳ (today, week, month).
+     * API dữ liệu báo cáo theo kỳ (today, week, month) và trạng thái.
      */
     public function data(Request $request)
     {
         $period = $request->query('period', 'today');
+        $status = $request->query('status', 'all');
         $baseQuery = Task::where('user_id', Auth::id());
 
         // Xác định khoảng thời gian
@@ -68,12 +69,20 @@ class ReportController extends Controller
             $baseQuery->whereMonth('deadline', Carbon::now()->month);
         }
 
+        // Lọc theo trạng thái
+        if ($status !== 'all') {
+            $baseQuery->where('status', $status);
+        }
+
         // Tổng số công việc
         $total = (clone $baseQuery)->count();
 
         // Nếu không có công việc trong khoảng thời gian được chọn, load tất cả công việc
         if ($total === 0) {
             $baseQuery = Task::where('user_id', Auth::id());
+            if ($status !== 'all') {
+                $baseQuery->where('status', $status);
+            }
             $total = (clone $baseQuery)->count();
         }
 
@@ -142,6 +151,7 @@ class ReportController extends Controller
     public function exportPDF(Request $request)
     {
         $period = $request->query('period', 'today');
+        $status = $request->query('status', 'all');
         $baseQuery = Task::where('user_id', Auth::id());
 
         // Xác định khoảng thời gian
@@ -153,26 +163,29 @@ class ReportController extends Controller
             $baseQuery->whereMonth('deadline', Carbon::now()->month);
         }
 
+        // Lọc theo trạng thái
+        if ($status !== 'all') {
+            $baseQuery->where('status', $status);
+        }
+
         // Tổng số công việc
         $total = (clone $baseQuery)->count();
 
         // Nếu không có công việc trong khoảng thời gian được chọn, load tất cả công việc
         if ($total === 0) {
             $baseQuery = Task::where('user_id', Auth::id());
+            if ($status !== 'all') {
+                $baseQuery->where('status', $status);
+            }
             $total = (clone $baseQuery)->count();
         }
 
         // Thống kê trạng thái
-        $completed = (clone $baseQuery)->where('status', 'completed')->count();
-        $inProgress = (clone $baseQuery)->where('status', 'in_progress')->count();
-        $overdue = (clone $baseQuery)->where('status', 'overdue')->count();
-
-        // Lấy danh sách công việc và thống kê
         $data = [
             'total' => $total,
-            'completed' => $completed,
-            'inProgress' => $inProgress,
-            'overdue' => $overdue,
+            'completed' => (clone $baseQuery)->where('status', 'completed')->count(),
+            'inProgress' => (clone $baseQuery)->where('status', 'in_progress')->count(),
+            'overdue' => (clone $baseQuery)->where('status', 'overdue')->count(),
             'tasks' => (clone $baseQuery)->with(['user.manager'])->get(['id', 'title', 'status', 'deadline', 'progress', 'user_id']),
             'userStats' => Task::selectRaw('user_id, COUNT(*) as total, AVG(progress) as avg_progress')
                 ->where('user_id', Auth::id())
@@ -182,7 +195,8 @@ class ReportController extends Controller
                 ->get()
         ];
 
-        $pdf = Pdf::loadView('reports_pdf', compact('data', 'period'));
-        return $pdf->download('bao_cao_cong_viec_' . $period . '.pdf');
+        // Tạo PDF
+        $pdf = Pdf::loadView('reports_pdf', compact('data', 'period', 'status'));
+        return $pdf->download('bao_cao_cong_viec_' . $period . '_' . $status . '.pdf');
     }
 }

@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <link rel="icon" href="{{ asset('favicon_io/favicon-32x32.png') }}" type="image/png">
     <style>
-        /* Giữ nguyên các style hiện tại */
         .content {
             margin-left: 240px;
             padding: 25px;
@@ -174,7 +173,7 @@
             </div>
         @endif
 
-        <!-- Bộ lọc thời gian và xuất PDF -->
+        <!-- Bộ lọc thời gian, trạng thái và xuất PDF -->
         <div class="card mb-4">
             <div class="card-header">Bộ lọc báo cáo</div>
             <div class="card-body">
@@ -184,7 +183,13 @@
                         <option value="week">Tuần này</option>
                         <option value="month">Tháng này</option>
                     </select>
-                    <a href="{{ route('reports.export') }}?period=today" id="exportPDF" class="btn btn-primary">
+                    <select id="statusFilter" class="form-control">
+                        <option value="all">Tất cả trạng thái</option>
+                        <option value="completed">Hoàn thành</option>
+                        <option value="in_progress">Đang làm</option>
+                        <option value="overdue">Quá hạn</option>
+                    </select>
+                    <a href="{{ route('reports.export') }}?period=today&status=all" id="exportPDF" class="btn btn-primary">
                         <span class="text">Xuất PDF</span>
                         <span class="loading"><i class="bi bi-arrow-clockwise"></i> Đang xử lý...</span>
                     </a>
@@ -457,6 +462,25 @@
             }
         }
 
+        // Tính toán thống kê người phụ trách
+        function calculateUserStats(tasks) {
+            const userStats = {};
+            tasks.forEach(task => {
+                const managerName = task.manager_name || 'Không có';
+                if (!userStats[managerName]) {
+                    userStats[managerName] = { total: 0, totalProgress: 0, manager_name: managerName };
+                }
+                userStats[managerName].total += 1;
+                userStats[managerName].totalProgress += task.progress || 0;
+            });
+
+            return Object.values(userStats).map(stat => ({
+                manager_name: stat.manager_name,
+                total: stat.total,
+                avg_progress: stat.total ? (stat.totalProgress / stat.total).toFixed(2) : 0
+            }));
+        }
+
         // Cập nhật bảng công việc
         function updateTable(tasks) {
             const tbody = document.getElementById('reportTableBody');
@@ -512,35 +536,70 @@
         }
 
         // Cập nhật dashboard
-        function updateDashboard(data) {
-            document.getElementById('totalTasks').textContent = data.total;
-            document.getElementById('completed').textContent = data.completed;
-            document.getElementById('inProgress').textContent = data.inProgress;
-            document.getElementById('overdue').textContent = data.overdue;
-            document.getElementById('exportPDF').href = `{{ route('reports.export') }}?period=${document.getElementById('timeFilter').value}`;
-            initProgressChart(data);
-            initComparisonChart(data);
-            updateTable(data.tasks);
-            updateUserStatsTable(data.userStats);
+        function updateDashboard(data, status = 'all') {
+            // Lọc công việc theo trạng thái
+            let filteredTasks = data.tasks;
+            if (status !== 'all') {
+                filteredTasks = data.tasks.filter(task => task.status === status);
+            }
+
+            // Cập nhật thống kê
+            const totalTasks = filteredTasks.length;
+            const completed = filteredTasks.filter(task => task.status === 'completed').length;
+            const inProgress = filteredTasks.filter(task => task.status === 'in_progress').length;
+            const overdue = filteredTasks.filter(task => task.status === 'overdue').length;
+
+            document.getElementById('totalTasks').textContent = totalTasks;
+            document.getElementById('completed').textContent = completed;
+            document.getElementById('inProgress').textContent = inProgress;
+            document.getElementById('overdue').textContent = overdue;
+
+            // Cập nhật link xuất PDF
+            const period = document.getElementById('timeFilter').value;
+            document.getElementById('exportPDF').href = `{{ route('reports.export') }}?period=${period}&status=${status}`;
+
+            // Cập nhật biểu đồ tiến độ trung bình
+            const filteredProgressData = status === 'all' ? data.progressData : data.progressData.filter(item => {
+                return filteredTasks.some(task => task.date === item.date);
+            });
+            initProgressChart({ progressData: filteredProgressData });
+
+            // Cập nhật biểu đồ so sánh trạng thái
+            initComparisonChart({
+                comparisonData: {
+                    completed: completed,
+                    in_progress: inProgress,
+                    overdue: overdue
+                }
+            });
+
+            // Cập nhật bảng công việc
+            updateTable(filteredTasks);
+
+            // Cập nhật bảng thống kê người phụ trách
+            const userStats = calculateUserStats(filteredTasks);
+            updateUserStatsTable(userStats);
         }
 
-        // Xử lý bộ lọc thời gian với debounce
+        // Xử lý bộ lọc thời gian và trạng thái với debounce
         let timeout;
-        document.getElementById('timeFilter').addEventListener('change', function() {
+        function handleFilterChange() {
             clearTimeout(timeout);
             timeout = setTimeout(() => {
-                const period = this.value;
+                const period = document.getElementById('timeFilter').value;
+                const status = document.getElementById('statusFilter').value;
                 const loading = document.querySelector('#exportPDF .loading');
                 loading.style.display = 'inline';
+
                 if (initialData[period].total !== 0) {
-                    updateDashboard(initialData[period]);
+                    updateDashboard(initialData[period], status);
                     loading.style.display = 'none';
                 } else {
-                    fetch(`/reports/data?period=${period}`)
+                    fetch(`/reports/data?period=${period}&status=${status}`)
                         .then(response => response.json())
                         .then(data => {
                             initialData[period] = data;
-                            updateDashboard(data);
+                            updateDashboard(data, status);
                             loading.style.display = 'none';
                         })
                         .catch(error => {
@@ -549,11 +608,15 @@
                         });
                 }
             }, 300);
-        });
+        }
+
+        // Gắn sự kiện cho cả hai bộ lọc
+        document.getElementById('timeFilter').addEventListener('change', handleFilterChange);
+        document.getElementById('statusFilter').addEventListener('change', handleFilterChange);
 
         // Khởi tạo ban đầu
         document.addEventListener('DOMContentLoaded', function() {
-            updateDashboard(initialData.today);
+            updateDashboard(initialData.today, 'all');
         });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

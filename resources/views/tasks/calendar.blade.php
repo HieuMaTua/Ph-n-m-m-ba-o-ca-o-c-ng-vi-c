@@ -23,6 +23,61 @@
         .badge {
             font-size: 0.9em;
         }
+        /* PHÂN TRANG ĐẸP - CĂN GIỮA - KHÔNG LỆCH */
+        .pagination .page-item .page-link {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            margin: 0 4px;
+            border: 1.5px solid #dee2e6;
+            background-color: #fff;
+            color: #495057;
+            font-weight: 500;
+            border-radius: 50% !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            text-decoration: none;
+        }
+        .pagination .page-item.active .page-link {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(13, 110, 253, 0.3);
+            transform: scale(1.05);
+        }
+        .pagination .page-item .page-link:hover:not(.disabled) {
+            background-color: #f8f9fa;
+            border-color: #0d6efd;
+            color: #0d6efd;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        .pagination .page-item.disabled .page-link {
+            color: #9ca3af;
+            background-color: #f8f9fa;
+            border-color: #e5e7eb;
+            opacity: 0.6;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .pagination .page-link i {
+            font-size: 1.1em;
+            line-height: 1;
+        }
+        @media (max-width: 576px) {
+            .pagination .page-item .page-link {
+                width: 36px;
+                height: 36px;
+                margin: 0 2px;
+            }
+            .pagination .page-link i {
+                font-size: 1em;
+            }
+        }
     </style>
 </head>
 <body>
@@ -112,12 +167,162 @@
                 </thead>
                 <tbody>
                     @foreach($tasks as $task)
-                    @if(
-                        $task->user_id == Auth::user()->id ||
-                        ($task->user && $task->user->manager_id == Auth::user()->id)
-                    )
-                    
-                            @include('tasks.row', ['task' => $task, 'isOwnTask' => true])
+                        @if($task->user_id == Auth::user()->id || ($task->user && $task->user->manager_id == Auth::user()->id))
+                            <tr data-status="{{ $task->status }}" data-role="{{ $task->user->role ?? '' }}">
+                                <td>{{ $task->id }}</td>
+                                <td>{{ $task->user->name ?? 'N/A' }}</td>
+                                <td>{{ $task->title }}</td>
+                                <td>
+                                    @if($task->user && $task->user->role == 'director')
+                                        <span class="badge bg-primary">Giám đốc</span>
+                                    @elseif($task->user && $task->user->role == 'manager')
+                                        <span class="badge bg-info">Quản lý</span>
+                                    @else
+                                        <span class="badge bg-secondary">Nhân viên</span>
+                                    @endif
+                                </td>
+                                <td>{{ $task->user && $task->user->manager ? $task->user->manager->name : 'Không có' }}</td>
+                                <td>{{ $task->deadline ? \Carbon\Carbon::parse($task->deadline)->format('d/m/Y') : 'N/A' }}</td>
+                                <td>{{ \Carbon\Carbon::parse($task->created_at)->format('d/m/Y') }}</td>
+                                <td>
+                                    @switch($task->status)
+                                        @case('pending') <span class="badge bg-warning">Chờ xử lý</span> @break
+                                        @case('in_progress') <span class="badge bg-primary">Đang làm</span> @break
+                                        @case('completed') <span class="badge bg-success">Hoàn thành</span> @break
+                                        @case('overdue') <span class="badge bg-danger">Quá hạn</span> @break
+                                    @endswitch
+                                </td>
+                                <td>
+                                    @if($task->participants && count($task->participants) > 0)
+                                        @foreach($task->participants as $participant)
+                                            {{ $participant['user_name'] }} ({{ $participant['role'] }})@if(!$loop->last), @endif
+                                        @endforeach
+                                    @else
+                                        Chưa có người tham gia
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($task->user_id == Auth::user()->id || ($task->user && $task->user->manager_id == Auth::user()->id) || Auth::user()->role == 'director')
+                                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ $task->id }}">Sửa</button>
+                                        <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa công việc này?')">Xóa</button>
+                                        </form>
+                                    @else
+                                        <span class="text-muted">Không có quyền</span>
+                                    @endif
+                                </td>
+                                <td style="width:180px;">
+                                    <div class="progress">
+                                        <div class="progress-bar {{ $task->progress == 100 ? 'bg-success' : 'bg-info' }}"
+                                             role="progressbar"
+                                             style="width: {{ $task->progress ?? 0 }}%">
+                                            {{ $task->progress ?? 0 }}%
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Modal sửa -->
+                            <div class="modal fade" id="editModal{{ $task->id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form action="{{ route('tasks.update', $task) }}" method="POST" enctype="multipart/form-data">
+                                            @csrf
+                                            @method('PUT')
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Chỉnh sửa công việc</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Tên công việc</label>
+                                                    <input type="text" name="title" class="form-control" value="{{ $task->title }}" required>
+                                                    <div class="error-message" id="edit-title-error{{ $task->id }}" style="color: red; font-size: 0.875em; display: none;">Vui lòng nhập tên công việc.</div>
+                                                </div>
+                                                @if(Auth::user()->role == 'manager' || Auth::user()->role == 'director')
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Trạng thái</label>
+                                                        <select name="status" class="form-control">
+                                                            <option value="pending" {{ $task->status == 'pending' ? 'selected' : '' }}>Chờ xử lý</option>
+                                                            <option value="in_progress" {{ $task->status == 'in_progress' ? 'selected' : '' }}>Đang làm</option>
+                                                            <option value="completed" {{ $task->status == 'completed' ? 'selected' : '' }}>Hoàn thành</option>
+                                                            <option value="overdue" {{ $task->status == 'overdue' ? 'selected' : '' }}>Quá hạn</option>
+                                                        </select>
+                                                    </div>
+                                                @else
+                                                    <input type="hidden" name="status" value="{{ $task->status }}">
+                                                @endif
+                                                <div class="mb-3">
+                                                    <label class="form-label">Hạn chót</label>
+                                                    <input type="date" name="deadline" class="form-control" value="{{ $task->deadline ? \Carbon\Carbon::parse($task->deadline)->format('Y-m-d') : '' }}">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Tiến độ (%)</label>
+                                                    <input type="number" name="progress" min="0" max="100" class="form-control" value="{{ $task->progress ?? 0 }}"
+                                                           @if(Auth::user()->role == 'staff') disabled @endif>
+                                                    <div class="error-message" id="edit-progress-error{{ $task->id }}" style="color: red; font-size: 0.875em; display: none;">Tiến độ phải từ 0 đến 100.</div>
+                                                </div>
+                                                <!-- Thêm trường chọn người tham gia -->
+                                                @if(Auth::user()->role == 'director' || ($task->user && $task->user->manager_id == Auth::id()))
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Người tham gia</label>
+                                                        <div id="participants-container{{ $task->id }}">
+                                                            @php
+                                                                $users = \App\Models\User::where('id', '!=', Auth::user()->id)->get();
+                                                                $currentParticipants = collect($task->participants ?? [])->keyBy('user_id');
+                                                            @endphp
+                                                            @foreach($users as $user)
+                                                                <div class="row mb-2">
+                                                                    <div class="col-md-6">
+                                                                        <label>
+                                                                            <input type="checkbox" name="participants[]" value="{{ $user->id }}"
+                                                                                   {{ isset($currentParticipants[$user->id]) ? 'checked' : '' }}>
+                                                                            {{ $user->name }} ({{ $user->role }})
+                                                                        </label>
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        <select name="participant_role_{{ $user->id }}" class="form-control"
+                                                                                {{ isset($currentParticipants[$user->id]) ? '' : 'disabled' }}>
+                                                                            <option value="assistant" {{ isset($currentParticipants[$user->id]) && $currentParticipants[$user->id]['role'] == 'assistant' ? 'selected' : '' }}>Trợ lý</option>
+                                                                            <option value="contributor" {{ isset($currentParticipants[$user->id]) && $currentParticipants[$user->id]['role'] == 'contributor' ? 'selected' : '' }}>Người đóng góp</option>
+                                                                            <option value="reviewer" {{ isset($currentParticipants[$user->id]) && $currentParticipants[$user->id]['role'] == 'reviewer' ? 'selected' : '' }}>Người đánh giá</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                        <small class="form-text text-muted">Chọn người tham gia và vai trò tương ứng.</small>
+                                                        <div class="error-message" id="edit-participants-error{{ $task->id }}" style="color: red; font-size: 0.875em; display: none;">Vui lòng chọn ít nhất một người tham gia.</div>
+                                                    </div>
+                                                @endif
+                                                {{-- <div class="mb-3">
+                                                    <label class="form-label">Upload file (nếu thay đổi)</label>
+                                                    <input type="file" name="files[]" class="form-control" accept=".pdf,.doc,.docx,.jpg,.png" multiple>
+                                                    @if($task->files->count() > 0)
+                                                        <small>File hiện tại:</small>
+                                                        @foreach($task->files as $file)
+                                                            <div>
+                                                                <a href="{{ asset('storage/' . $file->file_path) }}" target="_blank">{{ basename($file->file_path) }}</a>
+                                                                <form action="{{ route('tasks.destroyFile', $file) }}" method="POST" class="d-inline">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button type="submit" class="btn btn-link text-danger p-0" onclick="return confirm('Bạn có chắc muốn xóa file này?')">Xóa</button>
+                                                                </form>
+                                                            </div>
+                                                        @endforeach
+                                                    @endif
+                                                </div> --}}
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                                <button type="submit" class="btn btn-primary">Lưu</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
                         @endif
                     @endforeach
                     @if(Auth::user()->role == 'director' && $tasks->isEmpty() || Auth::user()->role != 'director' && $tasks->where('user_id', Auth::user()->id)->isEmpty())
@@ -128,7 +333,7 @@
         </div>
 
         @if($tasks instanceof \Illuminate\Pagination\LengthAwarePaginator)
-            <div class="mt-3">{{ $tasks->links() }}</div>
+            <div class="mt-4">{{ $tasks->links('pagination.custom') }}</div>
         @endif
 
         <h2 class="mt-5">Công việc của đồng nghiệp đã tham gia</h2>
@@ -163,7 +368,52 @@
                             }
                         @endphp
                         @if($task->user_id != Auth::user()->id && $isParticipant)
-                            @include('tasks.row', ['task' => $task, 'isOwnTask' => false])
+                            <tr data-status="{{ $task->status }}" data-role="{{ $task->user->role ?? '' }}">
+                                <td>{{ $task->id }}</td>
+                                <td>{{ $task->user->name ?? 'N/A' }}</td>
+                                <td>{{ $task->title }}</td>
+                                <td>
+                                    @if($task->user && $task->user->role == 'director')
+                                        <span class="badge bg-primary">Giám đốc</span>
+                                    @elseif($task->user && $task->user->role == 'manager')
+                                        <span class="badge bg-info">Quản lý</span>
+                                    @else
+                                        <span class="badge bg-secondary">Nhân viên</span>
+                                    @endif
+                                </td>
+                                <td>{{ $task->user && $task->user->manager ? $task->user->manager->name : 'Không có' }}</td>
+                                <td>{{ $task->deadline ? \Carbon\Carbon::parse($task->deadline)->format('d/m/Y') : 'N/A' }}</td>
+                                <td>{{ \Carbon\Carbon::parse($task->created_at)->format('d/m/Y') }}</td>
+                                <td>
+                                    @switch($task->status)
+                                        @case('pending') <span class="badge bg-warning">Chờ xử lý</span> @break
+                                        @case('in_progress') <span class="badge bg-primary">Đang làm</span> @break
+                                        @case('completed') <span class="badge bg-success">Hoàn thành</span> @break
+                                        @case('overdue') <span class="badge bg-danger">Quá hạn</span> @break
+                                    @endswitch
+                                </td>
+                                <td>
+                                    @if($task->participants && count($task->participants) > 0)
+                                        @foreach($task->participants as $participant)
+                                            {{ $participant['user_name'] }} ({{ $participant['role'] }})@if(!$loop->last), @endif
+                                        @endforeach
+                                    @else
+                                        Chưa có người tham gia
+                                    @endif
+                                </td>
+                                <td>
+                                    <span class="text-muted">Không có quyền</span>
+                                </td>
+                                <td style="width:180px;">
+                                    <div class="progress">
+                                        <div class="progress-bar {{ $task->progress == 100 ? 'bg-success' : 'bg-info' }}"
+                                             role="progressbar"
+                                             style="width: {{ $task->progress ?? 0 }}%">
+                                            {{ $task->progress ?? 0 }}%
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
                         @endif
                     @endforeach
                     @if($tasks->where('user_id', '!=', Auth::user()->id)->filter(function($task) {
@@ -174,6 +424,10 @@
                 </tbody>
             </table>
         </div>
+
+        @if($tasks instanceof \Illuminate\Pagination\LengthAwarePaginator)
+            <div class="mt-4">{{ $tasks->links('pagination.custom') }}</div>
+        @endif
 
         <h2 class="mt-5">Công việc của đồng nghiệp (có thể tham gia)</h2>
         <div class="task-table-section">
@@ -205,9 +459,57 @@
                                     }
                                 }
                             }
+                            $isOverdue = $task->status === 'overdue';
                         @endphp
-                        @if($task->user_id != Auth::user()->id && !$isParticipant)
-                            @include('tasks.row', ['task' => $task, 'isOwnTask' => false])
+                        @if($task->user_id != Auth::user()->id && !$isParticipant && !$isOverdue)
+                            <tr data-status="{{ $task->status }}" data-role="{{ $task->user->role ?? '' }}">
+                                <td>{{ $task->id }}</td>
+                                <td>{{ $task->user->name ?? 'N/A' }}</td>
+                                <td>{{ $task->title }}</td>
+                                <td>
+                                    @if($task->user && $task->user->role == 'director')
+                                        <span class="badge bg-primary">Giám đốc</span>
+                                    @elseif($task->user && $task->user->role == 'manager')
+                                        <span class="badge bg-info">Quản lý</span>
+                                    @else
+                                        <span class="badge bg-secondary">Nhân viên</span>
+                                    @endif
+                                </td>
+                                <td>{{ $task->user && $task->user->manager ? $task->user->manager->name : 'Không có' }}</td>
+                                <td>{{ $task->deadline ? \Carbon\Carbon::parse($task->deadline)->format('d/m/Y') : 'N/A' }}</td>
+                                <td>{{ \Carbon\Carbon::parse($task->created_at)->format('d/m/Y') }}</td>
+                                <td>
+                                    @switch($task->status)
+                                        @case('pending') <span class="badge bg-warning">Chờ xử lý</span> @break
+                                        @case('in_progress') <span class="badge bg-primary">Đang làm</span> @break
+                                        @case('completed') <span class="badge bg-success">Hoàn thành</span> @break
+                                        @case('overdue') <span class="badge bg-danger">Quá hạn</span> @break
+                                    @endswitch
+                                </td>
+                                <td>
+                                    @if($task->participants && count($task->participants) > 0)
+                                        @foreach($task->participants as $participant)
+                                            {{ $participant['user_name'] }} ({{ $participant['role'] }})@if(!$loop->last), @endif
+                                        @endforeach
+                                    @else
+                                        Chưa có người tham gia
+                                    @endif
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-success join-btn" data-task-id="{{ $task->id }}" data-bs-toggle="modal" data-bs-target="#joinTaskModal">
+                                        Tham gia
+                                    </button>
+                                </td>
+                                <td style="width:180px;">
+                                    <div class="progress">
+                                        <div class="progress-bar {{ $task->progress == 100 ? 'bg-success' : 'bg-info' }}"
+                                             role="progressbar"
+                                             style="width: {{ $task->progress ?? 0 }}%">
+                                            {{ $task->progress ?? 0 }}%
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
                         @endif
                     @endforeach
                     @if($tasks->where('user_id', '!=', Auth::user()->id)->filter(function($task) {
@@ -220,26 +522,24 @@
         </div>
 
         @if($tasks instanceof \Illuminate\Pagination\LengthAwarePaginator)
-            <div class="mt-3">{{ $tasks->links() }}</div>
+            <div class="mt-4">{{ $tasks->links('pagination.custom') }}</div>
         @endif
 
-        <!-- Bảng Quản Lý Giao Việc - Hiển thị dựa trên manager_id hoặc Director -->
+        <!-- Bảng Quản Lý Giao Việc -->
         @if(Auth::user()->role == 'director' || App\Models\User::where('manager_id', Auth::id())->exists())
             <div class="mt-5">
                 <h2><i class="bi bi-person-check"></i> Quản Lý Giao Việc Cho Nhân Viên</h2>
-                
-                <!-- Form Giao Việc Nhanh -->
                 <div class="row g-3 mb-4 bg-light p-3 rounded">
                     <div class="col-md-4">
                         <select name="assign_employee" id="assignEmployee" class="form-control" required>
                             <option value="">Chọn nhân viên</option>
                             @php
                                 $query = App\Models\User::query();
-if (Auth::user()->role === 'director') {
-    $query->whereIn('role', ['staff', 'manager']);
-} else {
-    $query->where('role', 'staff')->where('manager_id', Auth::id());
-}
+                                if (Auth::user()->role === 'director') {
+                                    $query->whereIn('role', ['staff', 'manager']);
+                                } else {
+                                    $query->where('role', 'staff')->where('manager_id', Auth::id());
+                                }
                                 $employees = $query->get();
                             @endphp
                             @foreach($employees as $employee)
@@ -261,8 +561,6 @@ if (Auth::user()->role === 'director') {
                         </button>
                     </div>
                 </div>
-
-                <!-- Bảng Nhân Viên và Công Việc Được Giao -->
                 <div class="row">
                     <div class="col-md-6">
                         <h4>Danh sách nhân viên</h4>
@@ -281,11 +579,11 @@ if (Auth::user()->role === 'director') {
                                 <tbody>
                                     @php
                                         $query = App\Models\User::query();
-if (Auth::user()->role === 'director') {
-    $query->whereIn('role', ['staff', 'manager']);
-} else {
-    $query->where('role', 'staff')->where('manager_id', Auth::id());
-}
+                                        if (Auth::user()->role === 'director') {
+                                            $query->whereIn('role', ['staff', 'manager']);
+                                        } else {
+                                            $query->where('role', 'staff')->where('manager_id', Auth::id());
+                                        }
                                         $employees = $query
                                             ->withCount([
                                                 'assignedTasks as pending_tasks_count' => function($q) {
@@ -320,7 +618,6 @@ if (Auth::user()->role === 'director') {
                             </table>
                         </div>
                     </div>
-
                     <div class="col-md-6">
                         <h4>Công việc của <span id="selectedEmployeeName">-</span></h4>
                         <div id="employeeTasksContainer">
@@ -446,12 +743,15 @@ if (Auth::user()->role === 'director') {
             form.addEventListener('submit', function (e) {
                 const title = form.querySelector('input[name="title"]').value.trim();
                 const progress = form.querySelector('input[name="progress"]')?.value;
+                const participants = form.querySelectorAll('input[name="participants[]"]:checked');
                 const titleError = form.querySelector('[id^="edit-title-error"]');
                 const progressError = form.querySelector('[id^="edit-progress-error"]');
+                const participantsError = form.querySelector('[id^="edit-participants-error"]');
                 let hasError = false;
 
                 titleError.style.display = 'none';
                 if (progressError) progressError.style.display = 'none';
+                if (participantsError) participantsError.style.display = 'none';
 
                 if (!title) {
                     titleError.style.display = 'block';
@@ -463,11 +763,25 @@ if (Auth::user()->role === 'director') {
                     hasError = true;
                 }
 
+                // Kiểm tra nếu có trường người tham gia
+                if (participants.length === 0 && form.querySelector('[id^="participants-container"]')) {
+                    participantsError.style.display = 'block';
+                    hasError = true;
+                }
+
                 if (hasError) {
                     e.preventDefault();
                 } else {
                     document.querySelector('.loading-spinner').style.display = 'block';
                 }
+            });
+        });
+
+        // Bật/tắt select vai trò dựa trên checkbox người tham gia
+        document.querySelectorAll('input[name="participants[]"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const roleSelect = this.closest('.row').querySelector('select');
+                roleSelect.disabled = !this.checked;
             });
         });
 
@@ -580,10 +894,8 @@ if (Auth::user()->role === 'director') {
                 .then(data => {
                     if (data.success) {
                         alert('Giao việc thành công!');
-                        // Reset form
                         document.getElementById('assignTitle').value = '';
                         document.getElementById('assignDeadline').value = '';
-                        // Refresh trang để update count
                         location.reload();
                     } else {
                         alert('Lỗi: ' + (data.message || 'Không thể giao việc'));
@@ -598,25 +910,22 @@ if (Auth::user()->role === 'director') {
                 });
             });
 
-            // Xem công việc nhân viên (bên phải)
+            // Xem công việc nhân viên
             document.querySelectorAll('.view-tasks-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const employeeId = this.dataset.employeeId;
                     const employeeName = this.closest('tr').querySelector('td:nth-child(2)').textContent;
-                    
                     document.getElementById('selectedEmployeeName').textContent = employeeName;
                     loadEmployeeTasks(employeeId);
                 });
             });
 
-            // Load công việc cho container bên phải
             function loadEmployeeTasks(employeeId) {
                 fetch(`/tasks/employee/${employeeId}`)
                     .then(response => response.json())
                     .then(data => {
                         const container = document.getElementById('employeeTasksContainer');
                         let html = '<div class="table-responsive"><table class="table table-striped"><thead class="table-warning"><tr><th>ID</th><th>Tên công việc</th><th>Hạn chót</th><th>Trạng thái</th><th>Ngày giao</th></tr></thead><tbody>';
-                        
                         if (data.length === 0) {
                             html += '<tr><td colspan="5" class="text-center">Chưa có công việc nào</td></tr>';
                         } else {
@@ -633,7 +942,6 @@ if (Auth::user()->role === 'director') {
                                 `;
                             });
                         }
-                        
                         html += '</tbody></table></div>';
                         container.innerHTML = html;
                     })
@@ -642,33 +950,27 @@ if (Auth::user()->role === 'director') {
                     });
             }
 
-            // Mở modal xem chi tiết
             document.addEventListener('click', function(e) {
                 if (e.target && e.target.classList.contains('view-tasks-btn')) {
                     const employeeId = e.target.dataset.employeeId;
                     const employeeName = e.target.closest('tr').querySelector('td:nth-child(2)').textContent;
-                    
                     document.getElementById('modalEmployeeName').textContent = employeeName;
                     loadModalTasks(employeeId);
-                    
                     const modal = new bootstrap.Modal(document.getElementById('employeeTasksModal'));
                     modal.show();
                 }
             });
 
-            // Load cho modal
             function loadModalTasks(employeeId) {
                 fetch(`/tasks/employee/${employeeId}`)
                     .then(response => response.json())
                     .then(data => {
                         const tbody = document.getElementById('modalTasksBody');
                         tbody.innerHTML = '';
-                        
                         if (data.length === 0) {
                             tbody.innerHTML = '<tr><td colspan="6" class="text-center">Chưa có công việc nào</td></tr>';
                             return;
                         }
-                        
                         data.forEach(task => {
                             const statusBadge = getStatusBadge(task.status);
                             tbody.innerHTML += `
@@ -690,7 +992,6 @@ if (Auth::user()->role === 'director') {
                     });
             }
 
-            // Helper badge status
             function getStatusBadge(status) {
                 const badges = {
                     'pending': '<span class="badge bg-warning">Chờ xử lý</span>',
